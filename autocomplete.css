@@ -1,0 +1,14 @@
+.xpopover {
+    position: absolute;
+    z-index: 2;
+    cursor: pointer;
+    background-color: white;
+}
+
+.autocomplete-item{
+    cursor: pointer;
+}
+
+.selected{
+    background-color: grey;
+}
