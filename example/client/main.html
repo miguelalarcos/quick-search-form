@@ -1,0 +1,14 @@
+<head>
+  <title>example-quick</title>
+</head>
+
+<body>
+  {{> hello}}
+</body>
+
+<template name="hello">
+  {{> quickSearch sschema=schema doc=initial filters=filters output='output'}}
+  <div>
+    {{ repr }}
+  </div>
+</template>
