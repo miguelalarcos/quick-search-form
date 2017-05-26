@@ -5,11 +5,11 @@ import './inputs.js';
 
 import './search.html';
 
-const integer = (i)=>{i.inputmask('Regex', { 
+export const integer = (i)=>{i.inputmask('Regex', { 
     regex: "^[+-]?\\d+$"
     });}
 
-const float_ = (i)=>{i.inputmask('Regex', { 
+export const float_ = (i)=>{i.inputmask('Regex', { 
     regex: "^[+-]?((\\.\\d+)|(\\d+(\\.\\d+)?))$"
     });}
 
@@ -96,3 +96,23 @@ Template.quickSearch.events({
       tmpl.form.doc({});
     }
 });
+
+export const _wSearch = (tmpl) => {
+
+  Forms.mixin(tmpl, {});
+
+  tmpl.onRendered(function(){
+    integer(this.$('.integer'));
+    float_(this.$('.float'));
+    this.$('.datepicker').datepicker();  
+  });
+
+  tmpl.events({
+    'documentSubmit': function (e, tmpl, doc) {
+        console.log(doc);
+        const transDoc = form2JSON(doc, tmpl.data.sschema);
+        Session.set(tmpl.data.output, transDoc);
+        tmpl.form.doc({});
+      }
+  });  
+}
