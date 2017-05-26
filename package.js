@@ -18,15 +18,12 @@ Package.onUse(function(api) {
   api.versionsFrom('1.4.4.2');
   api.use('ecmascript');
   api.use('templating', 'client');
+  api.use('tracker');
   api.use('session');
   api.use('useful:forms@1.1.3');
-  api.use('bigdsk:inputmask@3.3.3');
-  api.use('twbs:bootstrap@3.3.6');
-  api.use('eternicode:bootstrap-datepicker@1.6.0_3');
-
-  api.addFiles('autocomplete.css', 'client');
-  //api.addFiles('inputs.html', 'client');
+  
   api.mainModule('quick-search-form.js', 'client');
+  api.mainModule('quick-search-form-server.js', 'server');
   
 });
 

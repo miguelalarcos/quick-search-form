@@ -1,5 +1,17 @@
 import { Template } from 'meteor/templating';
-import './inputs.js';
+import { Tracker } from 'meteor/tracker';
+
+extractValidation = (schema) => {
+  ret = {};
+  for(let k of Object.keys(schema)){
+    if(schema[k].validate){
+      ret[k] = (v)=>{
+        return schema[k].validate(v);
+      }
+    }
+  }
+  return ret;
+}
 
 export const integer = (i) => {i.inputmask('Regex', { 
     regex: "^[+-]?\\d+$"
@@ -12,6 +24,8 @@ export const float_ = (i) => {i.inputmask('Regex', {
 }
 
 export const datepicker = (i) => {i.datepicker()}
+
+export const autocomplete = (i) => {Meteor.typeahead.inject();}
 
 const form2JSON = (raw, schema) => {
   const ret = {};
@@ -49,58 +63,29 @@ const form2JSON = (raw, schema) => {
   return ret;
 }
 
-export const qForm = (tmpl, {validation, integer, float_, datepicker}) => {
+export const qForm = (template, {schema, integer, float_, datepicker}) => {
 
-  Forms.mixin(tmpl, validation || {});
+  const validation = extractValidation(schema);
 
-  tmpl.onRendered(function(){
+  Forms.mixin(template, validation || {});
+
+  template.onCreated(function(){
+    Tracker.autorun(function(){
+      const doc = Session.get(this.data.input) || this.data.initial || {};
+      this.form.doc(doc); 
+    });
+  });
+
+  template.onRendered(function(){
     if(integer) integer(this.$('.integer'));
     if(float_) float_(this.$('.float'));
     if(datepicker) datepicker(this.$('.datepicker'));
+    if(autocomplete) autocomplete(this.$('.autocomplete'));
   });
 
-  tmpl.events({
+  template.events({
     'documentSubmit': function (e, tmpl, doc) {
-        const transDoc = form2JSON(doc, tmpl.data.qschema);
-        Session.set(tmpl.data.output, transDoc);
-        tmpl.form.doc({});
-      }
-  });  
-}
-
-export const wSearch = (tmpl) => {
-
-  Forms.mixin(tmpl, {});
-
-  tmpl.onRendered(function(){
-    integer(this.$('.integer'));
-    float_(this.$('.float'));
-    this.$('.datepicker').datepicker();  
-  });
-
-  tmpl.events({
-    'documentSubmit': function (e, tmpl, doc) {
-        console.log(doc);
-        const transDoc = form2JSON(doc, tmpl.data.sschema);
-        Session.set(tmpl.data.output, transDoc);
-        tmpl.form.doc({});
-      }
-  });  
-}
-
-export const wForm = (tmpl, validation) => {
-
-  Forms.mixin(tmpl, validation);
-
-  tmpl.onRendered(function(){
-    integer(this.$('.integer'));
-    float_(this.$('.float'));
-    this.$('.datepicker').datepicker();  
-  });
-
-  tmpl.events({
-    'documentSubmit': function (e, tmpl, doc) {
-        const transDoc = form2JSON(doc, tmpl.data.sschema);
+        const transDoc = form2JSON(doc, schema);
         Session.set(tmpl.data.output, transDoc);
         tmpl.form.doc({});
       }
