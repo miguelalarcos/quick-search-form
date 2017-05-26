@@ -70,9 +70,11 @@ export const qForm = (template, {schema, integer, float_, datepicker}) => {
   Forms.mixin(template, validation || {});
 
   template.onCreated(function(){
+    let self = this;
     Tracker.autorun(function(){
-      const doc = Session.get(this.data.input) || this.data.initial || {};
-      this.form.doc(doc); 
+      const doc = Session.get(self.data.input) || self.data.initial || {};
+      //convertir los dates a texto
+      self.form.doc(doc); 
     });
   });
 
