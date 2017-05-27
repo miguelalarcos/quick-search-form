@@ -1,5 +1,11 @@
 import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
+//import moment from 'moment';
+import Decimal from 'decimal.js';
+export { query2Mongo } from './quick-search-form-server.js';
+import flatten from 'flat';
+
+//console.log(flatten.unflatten);
 
 extractValidation = (schema) => {
   ret = {};
@@ -27,7 +33,7 @@ export const datepicker = (i) => {i.datepicker()}
 
 export const autocomplete = (i) => {Meteor.typeahead.inject();}
 
-const form2JSON = (raw, schema) => {
+const form2Object = (raw, schema) => {
   const ret = {};
   const keys = Object.keys(raw);
   
@@ -37,6 +43,47 @@ const form2JSON = (raw, schema) => {
     switch(type){
       case 'integer':
       case 'float':
+        if(raw[k] == ''){
+          ret[k] = undefined;
+        }else{
+          ret[k] = +raw[k];// || 0;
+        }
+        break;
+      case 'string':
+      case 'autocomplete':
+      case 'select':
+      case 'text':
+        ret[k] = raw[k];
+        break;
+      case 'boolean':
+        ret[k] = raw[k];
+        break; 
+      case 'decimal':
+        ret[k] = new Decimal(raw[k]);   
+      case 'date':
+        if(raw[k] == ''){
+            ret[k] = undefined;
+        }else{
+            ret[k] = moment(raw[k], 'DD-MM-YYYY');
+        }
+        break;  
+    }
+  }
+  return ret;
+}
+
+const form2JSON = (raw, schema) => {
+  const ret = {};
+  const keys = Object.keys(raw);
+  
+  for(let k of keys){
+    console.log(k);
+    k2 = k.split('$')[0];
+    let type = schema[k2].type;
+    switch(type){      
+      case 'integer':
+      case 'float':
+      case 'decimal':
         if(raw[k] == ''){
           ret[k] = undefined;
         }else{
@@ -71,9 +118,17 @@ export const qForm = (template, {schema, integer, float_, datepicker}) => {
 
   template.onCreated(function(){
     let self = this;
+    // es necesario parar este autorun manualmente???
     Tracker.autorun(function(){
-      const doc = Session.get(self.data.input) || self.data.initial || {};
-      //convertir los dates a texto
+      let doc = Session.get(self.data.input) || self.data.initial || {};
+      
+      doc = flatten(doc, {delimiter: '-'});
+      for(let k of Object.keys(doc)){
+        k = k.split('$')[0];
+        if(schema[k].type == 'date'){
+          doc[k] = doc[k].format('DD-MM-YYYY');
+        }
+      }
       self.form.doc(doc); 
     });
   });
@@ -87,8 +142,10 @@ export const qForm = (template, {schema, integer, float_, datepicker}) => {
 
   template.events({
     'documentSubmit': function (e, tmpl, doc) {
-        const transDoc = form2JSON(doc, schema);
-        Session.set(tmpl.data.output, transDoc);
+        if(tmpl.data.jsonOutput)
+          Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));
+        if(tmpl.data.objectOutput)
+          Session.set(tmpl.data.objectOutput, form2Object(doc, schema));
         tmpl.form.doc({});
       }
   });  

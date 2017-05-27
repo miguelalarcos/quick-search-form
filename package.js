@@ -11,7 +11,9 @@ Package.describe({
 });
 
 Npm.depends({
-  moment: "2.18.1"
+  "decimal.js": "7.2.1",
+  "moment": "2.18.1",
+  "flat": "2.0.1"
 });
 
 Package.onUse(function(api) {
