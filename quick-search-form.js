@@ -1,11 +1,9 @@
 import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
-//import moment from 'moment';
+import moment from 'moment';
 import Decimal from 'decimal.js';
 export { query2Mongo } from './quick-search-form-server.js';
 import flatten from 'flat';
-
-//console.log(flatten.unflatten);
 
 extractValidation = (schema) => {
   ret = {};
@@ -24,7 +22,7 @@ export const integer = (i) => {i.inputmask('Regex', {
     });
 }
 
-export const float_ = (i) => {i.inputmask('Regex', { 
+export const float = (i) => {i.inputmask('Regex', { 
     regex: "^[+-]?((\\.\\d+)|(\\d+(\\.\\d+)?))$"
     });
 }
@@ -69,7 +67,7 @@ const form2Object = (raw, schema) => {
         break;  
     }
   }
-  return ret;
+  return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 const form2JSON = (raw, schema) => {
@@ -77,7 +75,6 @@ const form2JSON = (raw, schema) => {
   const keys = Object.keys(raw);
   
   for(let k of keys){
-    console.log(k);
     k2 = k.split('$')[0];
     let type = schema[k2].type;
     switch(type){      
@@ -107,10 +104,10 @@ const form2JSON = (raw, schema) => {
         break;  
     }
   }
-  return ret;
+  return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-export const qForm = (template, {schema, integer, float_, datepicker}) => {
+export const qForm = (template, {schema, integer, float, datepicker}) => {
 
   const validation = extractValidation(schema);
 
@@ -118,8 +115,7 @@ export const qForm = (template, {schema, integer, float_, datepicker}) => {
 
   template.onCreated(function(){
     let self = this;
-    // es necesario parar este autorun manualmente???
-    Tracker.autorun(function(){
+    this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
       
       doc = flatten(doc, {delimiter: '-'});
@@ -135,7 +131,7 @@ export const qForm = (template, {schema, integer, float_, datepicker}) => {
 
   template.onRendered(function(){
     if(integer) integer(this.$('.integer'));
-    if(float_) float_(this.$('.float'));
+    if(float) float(this.$('.float'));
     if(datepicker) datepicker(this.$('.datepicker'));
     if(autocomplete) autocomplete(this.$('.autocomplete'));
   });
