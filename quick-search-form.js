@@ -107,11 +107,11 @@ const form2JSON = (raw, schema) => {
   return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-export const qForm = (template, {schema, integer, float, datepicker}) => {
+export const qForm = (template, {schema, integer, float, datepicker, autocomplete}) => {
 
   const validation = extractValidation(schema);
 
-  Forms.mixin(template, validation || {});
+  Forms.mixin(template, {schema: validation || {}});
 
   template.onCreated(function(){
     let self = this;
@@ -131,7 +131,10 @@ export const qForm = (template, {schema, integer, float, datepicker}) => {
 
   template.onRendered(function(){
     if(integer) integer(this.$('.integer'));
-    if(float) float(this.$('.float'));
+    if(float){
+      float(this.$('.float'));
+      float(this.$('.decimal'));
+    }
     if(datepicker) datepicker(this.$('.datepicker'));
     if(autocomplete) autocomplete(this.$('.autocomplete'));
   });
@@ -139,7 +142,7 @@ export const qForm = (template, {schema, integer, float, datepicker}) => {
   template.events({
     'documentSubmit': function (e, tmpl, doc) {
         if(tmpl.data.jsonOutput)
-          Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));
+          Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));        
         if(tmpl.data.objectOutput)
           Session.set(tmpl.data.objectOutput, form2Object(doc, schema));
         tmpl.form.doc({});
