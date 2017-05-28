@@ -3,6 +3,7 @@ import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
 export { query2Mongo } from './quick-search-form-server.js';
+import { validate, form2Object } from './quick-search-form-server.js';
 import flatten from 'flat';
 
 extractValidation = (schema) => {
@@ -30,45 +31,6 @@ export const float = (i) => {i.inputmask('Regex', {
 export const datepicker = (i) => {i.datepicker()}
 
 export const autocomplete = (i) => {Meteor.typeahead.inject();}
-
-const form2Object = (raw, schema) => {
-  const ret = {};
-  const keys = Object.keys(raw);
-  
-  for(let k of keys){
-    k2 = k.split('$')[0];
-    let type = schema[k2].type;
-    switch(type){
-      case 'integer':
-      case 'float':
-        if(raw[k] == ''){
-          ret[k] = undefined;
-        }else{
-          ret[k] = +raw[k];// || 0;
-        }
-        break;
-      case 'string':
-      case 'autocomplete':
-      case 'select':
-      case 'text':
-        ret[k] = raw[k];
-        break;
-      case 'boolean':
-        ret[k] = raw[k];
-        break; 
-      case 'decimal':
-        ret[k] = new Decimal(raw[k]);   
-      case 'date':
-        if(raw[k] == ''){
-            ret[k] = undefined;
-        }else{
-            ret[k] = moment(raw[k], 'DD-MM-YYYY');
-        }
-        break;  
-    }
-  }
-  return flatten.unflatten(ret, {delimiter: '-'});
-}
 
 const form2JSON = (raw, schema) => {
   const ret = {};
@@ -111,7 +73,8 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
 
   const validation = extractValidation(schema);
 
-  Forms.mixin(template, {schema: validation || {}});
+  //Forms.mixin(template, {schema: validation || {}});
+  Forms.mixin(template, {});
 
   template.onCreated(function(){
     let self = this;
@@ -141,11 +104,23 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
 
   template.events({
     'documentSubmit': function (e, tmpl, doc) {
-        if(tmpl.data.jsonOutput)
-          Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));        
-        if(tmpl.data.objectOutput)
-          Session.set(tmpl.data.objectOutput, form2Object(doc, schema));
-        tmpl.form.doc({});
+        //const valids = validate(form2Object(doc, schema), schema);
+        const valids = validate(doc, schema);
+        console.log(valids, _.every(_.values(valids)));
+        if(_.every(_.values(valids))){
+          if(tmpl.data.jsonOutput)
+            Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));        
+          if(tmpl.data.objectOutput)
+            Session.set(tmpl.data.objectOutput, form2Object(doc, schema));
+          tmpl.form.doc({});
+        }else{
+          for(let k of Object.keys(valids)){
+            if(!valids[k]){
+              if(schema[k])
+                tmpl.form.errors(k, [{error: new Error(), message: schema[k].message}]);
+            }
+          }
+        }
       }
   });  
 }
