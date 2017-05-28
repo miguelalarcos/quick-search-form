@@ -1,3 +1,4 @@
+/*
 import moment from 'moment';
 import flatten from 'flat';
 
@@ -38,12 +39,13 @@ export const form2Object = (raw, schema) => {
         break;  
     }
   }
-  return flatten.unflatten(ret, {delimiter: '-'});
+  return ret;
+  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 const JSON2Object = (jsonDoc, schema) => {
   const ret = {};
-  jsonDoc = flatten(jsonDoc, {delimiter: '-'});
+  //jsonDoc = flatten(jsonDoc, {delimiter: '-'});
   const keys = Object.keys(jsonDoc);
   
   for(let k of keys){
@@ -65,7 +67,8 @@ const JSON2Object = (jsonDoc, schema) => {
         break;  
     }
   }
-  return flatten.unflatten(ret, {delimiter: '-'});
+  return ret;
+  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const query2Mongo = (query) => {
@@ -110,3 +113,4 @@ export const validate = (doc, schema) => {
     }
     return ret;
 }
+*/

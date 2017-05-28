@@ -2,21 +2,10 @@ import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
-export { query2Mongo } from './quick-search-form-server.js';
-import { validate, form2Object } from './quick-search-form-server.js';
+//export { query2Mongo } from './quick-search-form-server.js';
+export { object2JSON } from './utils.js';
+import { validate, form2Object, object2form } from '.utils.js'; //./quick-search-form-server.js';
 import flatten from 'flat';
-
-extractValidation = (schema) => {
-  ret = {};
-  for(let k of Object.keys(schema)){
-    if(schema[k].validate){
-      ret[k] = (v)=>{
-        return schema[k].validate(v);
-      }
-    }
-  }
-  return ret;
-}
 
 export const integer = (i) => {i.inputmask('Regex', { 
     regex: "^[+-]?\\d+$"
@@ -32,62 +21,14 @@ export const datepicker = (i) => {i.datepicker()}
 
 export const autocomplete = (i) => {Meteor.typeahead.inject();}
 
-const form2JSON = (raw, schema) => {
-  const ret = {};
-  const keys = Object.keys(raw);
-  
-  for(let k of keys){
-    k2 = k.split('$')[0];
-    let type = schema[k2].type;
-    switch(type){      
-      case 'integer':
-      case 'float':
-      case 'decimal':
-        if(raw[k] == ''){
-          ret[k] = undefined;
-        }else{
-          ret[k] = +raw[k];// || 0;
-        }
-        break;
-      case 'string':
-      case 'autocomplete':
-      case 'select':
-        ret[k] = raw[k];
-        break;
-      case 'boolean':
-        ret[k] = raw[k];
-        break;  
-      case 'date':
-        if(raw[k] == ''){
-            ret[k] = undefined;
-        }else{
-            ret[k] = moment(raw[k], 'DD-MM-YYYY').toDate();
-        }
-        break;  
-    }
-  }
-  return flatten.unflatten(ret, {delimiter: '-'});
-}
-
 export const qForm = (template, {schema, integer, float, datepicker, autocomplete}) => {
-
-  const validation = extractValidation(schema);
-
-  //Forms.mixin(template, {schema: validation || {}});
   Forms.mixin(template, {});
 
   template.onCreated(function(){
     let self = this;
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
-      
-      doc = flatten(doc, {delimiter: '-'});
-      for(let k of Object.keys(doc)){
-        k = k.split('$')[0];
-        if(schema[k].type == 'date'){
-          doc[k] = doc[k].format('DD-MM-YYYY');
-        }
-      }
+      doc = object2form(doc, schema);
       self.form.doc(doc); 
     });
   });
@@ -104,14 +45,14 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
 
   template.events({
     'documentSubmit': function (e, tmpl, doc) {
-        //const valids = validate(form2Object(doc, schema), schema);
-        const valids = validate(doc, schema);
-        console.log(valids, _.every(_.values(valids)));
+        const obj = form2Object(doc, schema);
+        const valids = validate(obj, schema);
+        
         if(_.every(_.values(valids))){
-          if(tmpl.data.jsonOutput)
-            Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));        
+          //if(tmpl.data.jsonOutput)
+          //  Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));        
           if(tmpl.data.objectOutput)
-            Session.set(tmpl.data.objectOutput, form2Object(doc, schema));
+            Session.set(tmpl.data.objectOutput, obj);
           tmpl.form.doc({});
         }else{
           for(let k of Object.keys(valids)){
