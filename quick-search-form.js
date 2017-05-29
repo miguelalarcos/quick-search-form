@@ -25,12 +25,11 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
   Forms.mixin(template, {});
 
   template.onCreated(function(){
-    Session.set(this.data.output, {});
+    //Session.set(this.data.output, {});
     let self = this;
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
       doc = object2form(doc, schema);
-      console.log('to input', doc);
       self.form.doc(doc); 
     });
   });

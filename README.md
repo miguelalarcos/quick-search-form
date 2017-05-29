@@ -72,7 +72,7 @@ For example, one of the things you can do with this package is to create a searc
 ```javascript
 import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
-import { qForm, integer, float, object2JSON } from 'meteor/quick-search-form';
+import { qForm, integer, float, object2JSON } from 'meteor/miguelalarcos:quick-search-form';
 
 import './main.html';
 
