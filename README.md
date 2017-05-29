@@ -8,9 +8,9 @@ For example, one of the things you can do with this package is to create a searc
 Youc could have something like this:
 
 ```html
-{{> searchClients output='query'}}
-{{> clients input='query' output='clientSelected'}}
-{{> client input='clientSelected' output='client'}}
+{{> clientsSearch output='query'}}
+{{> clientsTable input='query' output='clientSelected'}}
+{{> clientForm input='clientSelected' output='client'}}
 <!-- then in js code you have an autorun on session 'client' that insert or update to a Mongo collection -->
 ```
 
