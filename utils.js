@@ -1,13 +1,14 @@
 import moment from 'moment';
 import flatten from 'flat';
 
-export const object2Form = (obj, schema) => {
+export const object2form = (obj, schema) => {
   const ret = {};
   obj = flatten(obj, {delimiter: '-'});
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    let type = schema[k].type;
+    let k2 = k.split('$')[0];
+    let type = schema[k2].type;
     switch(type){
       case 'integer':
       case 'float':
@@ -25,7 +26,8 @@ export const object2Form = (obj, schema) => {
         break;  
     }
   }  
-  return flatten.unflatten(ret, {delimiter: '-'});
+  return ret;
+  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const form2Object = (raw, schema) => {
@@ -33,8 +35,7 @@ export const form2Object = (raw, schema) => {
   const keys = Object.keys(raw);
   
   for(let k of keys){
-    k2 = k.split('$')[0];
-    
+    let k2 = k.split('$')[0];
     let type = schema[k2].type;
     switch(type){
       case 'integer':
@@ -68,7 +69,7 @@ export const form2Object = (raw, schema) => {
   return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-const JSON2Object = (jsonDoc, schema) => {
+export const JSON2Object = (jsonDoc, schema) => {
   const ret = {};
   jsonDoc = flatten(jsonDoc, {delimiter: '-'});
   const keys = Object.keys(jsonDoc);
@@ -101,7 +102,8 @@ export const object2JSON = (obj, schema) => {
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    let type = schema[k].type;
+    let k2 = k.split('$')[0]; 
+    let type = schema[k2].type;
     switch(type){
       case 'integer':
       case 'float':
@@ -122,8 +124,7 @@ export const object2JSON = (obj, schema) => {
   return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-export const queryObject2Mongo = (query, schema) => {
-    query = object2JSON(query, schema);
+export const queryJSON2Mongo = (query, schema) => {
     query = flatten(query, {delimiter: '-'});
     ret = {};
     for(let key of Object.keys(query)){
@@ -138,10 +139,9 @@ export const queryObject2Mongo = (query, schema) => {
     return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-export const validate = (obj, schema) => {
-    let doc = obj;
+export const validate = (obj, schema) => {    
     ret = {};
-    doc = flatten(doc, {delimiter: '-'});
+    let doc = flatten(obj, {delimiter: '-'});
     const schemaKeys = Object.keys(schema);
 
     for(let k of Object.keys(schema)){ 
@@ -160,7 +160,7 @@ export const validate = (obj, schema) => {
         }
         const v = schema[k].validate;        
 
-        if(v && !v(doc[k])){
+        if(v && !v(doc[k], obj)){
             ret[k] = false;
             continue;
         }

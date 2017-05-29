@@ -4,7 +4,7 @@ import moment from 'moment';
 import Decimal from 'decimal.js';
 //export { query2Mongo } from './quick-search-form-server.js';
 export { object2JSON } from './utils.js';
-import { validate, form2Object, object2form } from '.utils.js'; //./quick-search-form-server.js';
+import { validate, form2Object, object2form } from './utils.js'; //./quick-search-form-server.js';
 import flatten from 'flat';
 
 export const integer = (i) => {i.inputmask('Regex', { 
@@ -25,10 +25,12 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
   Forms.mixin(template, {});
 
   template.onCreated(function(){
+    Session.set(this.data.output, {});
     let self = this;
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
       doc = object2form(doc, schema);
+      console.log('to input', doc);
       self.form.doc(doc); 
     });
   });
@@ -48,11 +50,8 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
         const obj = form2Object(doc, schema);
         const valids = validate(obj, schema);
         
-        if(_.every(_.values(valids))){
-          //if(tmpl.data.jsonOutput)
-          //  Session.set(tmpl.data.jsonOutput, form2JSON(doc, schema));        
-          if(tmpl.data.objectOutput)
-            Session.set(tmpl.data.objectOutput, obj);
+        if(_.every(_.values(valids))){          
+          Session.set(tmpl.data.output, obj);
           tmpl.form.doc({});
         }else{
           for(let k of Object.keys(valids)){
