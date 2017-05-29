@@ -5,6 +5,62 @@ This is a wrap over the intelligent package `useful:forms`. With `qForm` you cha
 
 For example, one of the things you can do with this package is to create a search-form, i.e., a form that produces a query Mongo-like that you can use to subscribe to some publication.
 
+Youc could have something like this:
+
+```html
+{{> searchClients output='query'}}
+{{> clients input='query' output='clientSelected'}}
+{{> client input='clientSelected' output='client'}}
+<!-- then in js code you have an autorun on session 'client' that insert or update to a Mongo collection -->
+```
+
+Let's see an input example:
+
+```html
+<input type="text" name="a" class="integer" value={{doc 'a'}}>
+```
+
+You can see first that we use the class to indicate the type. The possible types are: string, text, boolean, integer, float, decimal and date. When you get the doc object of a form, the decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
+
+A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. You have to pass de doc from object to JSON before sending to server. The validate functions receives the doc in object form.
+
+An interesting thing of this package is to construct Mongo-like queries:
+
+```
+html
+<input type="text" name="a$lt" class="integer" value={{doc 'a$lt'}}>
+```
+
+You can have nested properties. The character '-' is reserved to indicate the nested. The character '$' is used to indicate a Mongo operator:
+
+'x-y$eq' is resolved to `{x: {y$eq: value}}`.
+
+```html
+<input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
+```
+
+```javascript
+const schema = {
+      a: {type: 'integer'},
+      ...
+      'x-y': {type: 'string'}
+}
+
+Template.hello.helpers({
+  initial() {
+    return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}};
+  },
+  ...
+```
+
+There's a queryJSON2Mongo that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}`.
+
+TODO: explain server side.
+
+---
+
+Example:
+
 ```html
 <head>
   <title>example-quick</title>
@@ -81,14 +137,12 @@ const isBlank = (x)=>{return x == undefined || x == null || x == ''}
 const schema_form = {
       a: {type: 'integer', message: 'a debe ser mayor que 5', validate: (v) => {
         if(!isBlank(v)){
-          //return (+v > 5) || 'a debe ser mayor que 5'
           return v > 5;
         }
         return true;
       }
     },
       b: {type: 'string', message: 'b es obligatorio', validate: (v) => {
-        console.log('llego');
         return !isBlank(v);
       }
     },
