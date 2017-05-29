@@ -42,7 +42,7 @@ You can have nested properties. The character '-' is reserved to indicate the ne
 ```javascript
 const schema = {
       a: {type: 'integer'},
-      ...
+      b: {type: 'boolean'},
       'x-y': {type: 'string'}
 }
 
@@ -53,7 +53,7 @@ Template.hello.helpers({
   ...
 ```
 
-There's a queryJSON2Mongo that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}`.
+There's a queryJSON2Mongo that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}` to `{x: {y: {$eq: value}}}`.
 
 TODO: explain server side.
 
