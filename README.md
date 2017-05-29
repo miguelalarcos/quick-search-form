@@ -1,9 +1,17 @@
+qForm
+=====
+
+This is a wrap over the intelligent package `useful:forms`. With `qForm` you change the way of thinking about forms. Now the form is not responsible of sending the data to the server. Now it just produce an object that you can manipulate and decide if to send to the server or whatever.
+
+For example, one of the things you can do with this package is to create a search-form, i.e., a form that produces a query Mongo-like that you can use to subscribe to some publication.
+
 ```html
 <head>
   <title>example-quick</title>
 </head>
 
 <body>
+  <h1>qForm</h1>
   {{> hello}}
 </body>
 
@@ -11,11 +19,11 @@
   <div>
     {{ repr2 }}
   </div>
-  {{> my_search initial=initial jsonOutput='output2'}}
+  {{> my_search initial=initial output='output2'}}
   <div>
     {{ repr3 }}
   </div>
-  {{> my_form input='input1' initial=initial_form jsonOutput='ouput3' }}
+  {{> my_form input='input1' initial=initial_form output='output3' }}
 </template>
 
 <template name="my_search">
@@ -35,7 +43,7 @@
         </span>
         <span>
             <span>nested es</span>
-            <input type="text" name="x-y" class="text" value={{doc 'x-y'}}>
+            <input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
         </span>        
         <input type="submit" name="submit" value="Search">
         </form>
@@ -49,10 +57,12 @@
             <span>a:</span>
             <input type="text" name="a" class="integer" value={{doc 'a'}}>
         </div>
+        <div class="error">{{errorMessage 'a'}}</div>
         <div>
             <span>b:</span>
             <input type="text" name="b" class="string" value={{doc 'b'}}>
         </div>
+        <div class="error">{{errorMessage 'b'}}</div>
         <input type="submit" name="submit" value="Form">
         </form>
   </div>  
@@ -62,7 +72,7 @@
 ```javascript
 import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
-import { qForm, integer, float } from 'meteor/quick-search-form';
+import { qForm, integer, float, object2JSON } from 'meteor/quick-search-form';
 
 import './main.html';
 
@@ -94,21 +104,23 @@ const schema = {
       'x-y': {type: 'string'}
 }
 
-qForm(Template.my_search, {output: 'output2', schema, integer});
-qForm(Template.my_form, {output: 'output3', schema: schema_form});
+qForm(Template.my_search, {schema, integer});
+qForm(Template.my_form, {schema: schema_form, integer});
 
 Template.hello.helpers({
   initial() {
-    return {a$lt: 5, b$eq: true, x: {y: 'hola :)'}};
+    return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}};
   },
   repr2(){
-    return JSON.stringify(Session.get('output2'));
+    const obj = Session.get('output2');
+    return JSON.stringify(object2JSON(obj, schema));
   },
   initial_form() {
     return {a: 5};
   },
   repr3(){
-    return JSON.stringify(Session.get('output3'));
+    const obj = Session.get('output3');
+    return JSON.stringify(object2JSON(obj, schema_form));
   }
 });
 ```

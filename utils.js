@@ -98,6 +98,7 @@ export const JSON2Object = (jsonDoc, schema) => {
 
 export const object2JSON = (obj, schema) => {
   const ret = {};
+  obj = obj || {};
   obj = flatten(obj, {delimiter: '-'});
   const keys = Object.keys(obj);
   
