@@ -13,9 +13,9 @@ export const object2form = (obj, schema) => {
       case 'integer':
       case 'float':
       case 'string':
-      case 'autocomplete':
-      case 'select':
-      case 'text':
+      //case 'autocomplete':
+      //case 'select':
+      //case 'text':
       case 'boolean':
         ret[k] = obj[k];
         break; 
@@ -47,9 +47,9 @@ export const form2Object = (raw, schema) => {
         }
         break;
       case 'string':
-      case 'autocomplete':
-      case 'select':
-      case 'text':
+      //case 'autocomplete':
+      //case 'select':
+      //case 'text':
         ret[k] = raw[k];
         break;
       case 'boolean':
@@ -80,9 +80,9 @@ export const JSON2Object = (jsonDoc, schema) => {
       case 'integer':
       case 'float':
       case 'string':
-      case 'autocomplete':
-      case 'select':
-      case 'text':
+      //case 'autocomplete':
+      //case 'select':
+      //case 'text':
       case 'boolean':
         ret[k] = jsonDoc[k];
         break; 
@@ -109,9 +109,9 @@ export const object2JSON = (obj, schema) => {
       case 'integer':
       case 'float':
       case 'string':
-      case 'autocomplete':
-      case 'select':
-      case 'text':
+      //case 'autocomplete':
+      //case 'select':
+      //case 'text':
       case 'boolean':
         ret[k] = obj[k];
         break; 

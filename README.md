@@ -5,7 +5,7 @@ This is a wrap over the intelligent package `useful:forms`. With `qForm` you cha
 
 For example, one of the things you can do with this package is to create a search-form, i.e., a form that produces a query Mongo-like that you can use to subscribe to some publication.
 
-Youc could have something like this:
+Youc could have something like this: (inputs and outputs are the keys of Session vars)
 
 ```html
 {{> clientsSearch output='query'}}
@@ -20,7 +20,37 @@ Let's see an input example:
 <input type="text" name="a" class="integer" value={{doc 'a'}}>
 ```
 
-You can see first that we use the class to indicate the type. The possible types are: string, text, boolean, integer, float, decimal and date. When you get the doc object of a form, the decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
+You can see first that we use the class to indicate the type. This is important to render the input. I recommend to install `eternicode:bootstrap-datepicker`, `bigdsk:inputmask` and `sergeyt:typeahead`.
+
+These are other inputs:
+
+```html
+<input type="text" class="date" name="dateOfBirth" value={{doc 'dateOfBirth'}}>
+
+<input type="checkbox" name="done" class="boolean" checked={{doc 'done'}}>
+
+<input class="autocomplete typeahead" name="team" type="text"
+       autocomplete="off" spellcheck="off" data-source="nba" data-template="item" data-value-key="name">
+```
+
+```javascript
+const getRemoteResults = (source, query, callback) => {
+    Meteor.call(source, query, {}, function(err, res) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        callback(res);
+    });
+}
+
+Template.hello.helpers({
+  nba(query, sync, callback){
+    getRemoteResults('nba', query, callback);
+  },
+```
+
+The possible types are: string, boolean, integer, float, decimal and date. When you get the doc object of a form, the decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
 
 A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. You have to pass de doc from object to JSON before sending to server. The validate functions receives the doc in object form.
 
@@ -39,10 +69,15 @@ You can have nested properties. The character '-' is reserved to indicate the ne
 <input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
 ```
 
+The package is base on schemas like this:
+
 ```javascript
 const schema = {
       a: {type: 'integer'},
+      f: {type: 'float'},
       b: {type: 'boolean'},
+      c: {type: 'decimal'},
+      d: {type: 'date'},
       'x-y': {type: 'string'}
 }
 
@@ -53,8 +88,29 @@ Template.hello.helpers({
   ...
 ```
 
+This is another example of schema, with validation:
+
+```javascript
+const isBlank = (x)=>{return x == undefined || x == null || x == ''}
+
+const schema_form = {
+      a: {type: 'integer', message: 'a must be greater than 5', validate: (v) => {
+        if(!isBlank(v)){
+          return v > 5;
+        }
+        return true;
+      }
+    },
+      b: {type: 'string', message: 'b is mandatory', validate: (v) => {
+        return !isBlank(v);
+      }
+    },
+};
+```
+
 There's a queryJSON2Mongo that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}` to `{x: {y: {$eq: value}}}`.
 
+TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
 TODO: explain server side.
 
 ---
@@ -135,14 +191,14 @@ import './main.html';
 const isBlank = (x)=>{return x == undefined || x == null || x == ''}
 
 const schema_form = {
-      a: {type: 'integer', message: 'a debe ser mayor que 5', validate: (v) => {
+      a: {type: 'integer', message: 'a must be greater than 5', validate: (v) => {
         if(!isBlank(v)){
           return v > 5;
         }
         return true;
       }
     },
-      b: {type: 'string', message: 'b es obligatorio', validate: (v) => {
+      b: {type: 'string', message: 'b is mandatory', validate: (v) => {
         return !isBlank(v);
       }
     },
@@ -166,14 +222,14 @@ Template.hello.helpers({
     return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}};
   },
   repr2(){
-    const obj = Session.get('output2');
+    const obj = Session.get('output2') || {};
     return JSON.stringify(object2JSON(obj, schema));
   },
   initial_form() {
     return {a: 5};
   },
   repr3(){
-    const obj = Session.get('output3');
+    const obj = Session.get('output3') || {};
     return JSON.stringify(object2JSON(obj, schema_form));
   }
 });

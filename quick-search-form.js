@@ -17,11 +17,11 @@ export const float = (i) => {i.inputmask('Regex', {
     });
 }
 
-export const datepicker = (i) => {i.datepicker()}
+export const date = (i) => {i.datepicker()}
 
 export const autocomplete = (i) => {Meteor.typeahead.inject();}
 
-export const qForm = (template, {schema, integer, float, datepicker, autocomplete}) => {
+export const qForm = (template, {schema, integer, float, date, autocomplete}) => {
   Forms.mixin(template, {});
 
   template.onCreated(function(){
@@ -40,7 +40,7 @@ export const qForm = (template, {schema, integer, float, datepicker, autocomplet
       float(this.$('.float'));
       float(this.$('.decimal'));
     }
-    if(datepicker) datepicker(this.$('.datepicker'));
+    if(date) date(this.$('.date'));
     if(autocomplete) autocomplete(this.$('.autocomplete'));
   });
 
