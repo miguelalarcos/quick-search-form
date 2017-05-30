@@ -55,7 +55,7 @@ Template.hello.helpers({
 
 The possible types are: string, boolean, integer, float, decimal and date. When you get the doc object of a form, the decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
 
-A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. You have to pass de doc from object to JSON before sending to server. The validate functions receives the doc in object form.
+A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. The default state is JSON but the validate functions receives the doc in object form.
 
 An interesting thing of this package is to construct Mongo-like queries:
 
@@ -209,21 +209,21 @@ Example:
 ```javascript
 import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
-import { qForm, integer, float, object2JSON } from 'meteor/miguelalarcos:quick-search-form';
+import { qForm, integer, float } from 'meteor/miguelalarcos:quick-search-form';
 
 import './main.html';
 
 const isBlank = (x)=>{return x == undefined || x == null || x == ''}
 
 const schema_form = {
-      a: {type: 'integer', message: 'a must be greater than 5', validate: (v, obj) => {
+      a: {type: 'integer', message: 'a must be greater than 5', validate: (v, doc) => {
         if(!isBlank(v)){
           return v > 5;
         }
         return true;
       }
     },
-      b: {type: 'string', message: 'b is mandatory', validate: (v, obj) => {
+      b: {type: 'string', message: 'b is mandatory', validate: (v, doc) => {
         return !isBlank(v);
       }
     },
@@ -248,14 +248,14 @@ Template.hello.helpers({
   },
   repr2(){
     const obj = Session.get('output2') || {};
-    return JSON.stringify(object2JSON(obj, schema));
+    return JSON.stringify(obj, schema);
   },
   initial_form() {
     return {a: 5};
   },
   repr3(){
     const obj = Session.get('output3') || {};
-    return JSON.stringify(object2JSON(obj, schema_form));
+    return JSON.stringify(obj, schema_form);
   }
 });
 ```

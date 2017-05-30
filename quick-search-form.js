@@ -3,8 +3,8 @@ import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
 //export { query2Mongo } from './quick-search-form-server.js';
-export { object2JSON } from './utils.js';
-import { validate, form2Object, object2form } from './utils.js'; //./quick-search-form-server.js';
+//export { object2JSON } from './utils.js';
+import { validate, form2JSON, JSON2form, JSON2Object } from './utils.js'; //./quick-search-form-server.js';
 import flatten from 'flat';
 
 export const integer = (i) => {i.inputmask('Regex', { 
@@ -28,7 +28,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete}) =>
     let self = this;
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
-      doc = object2form(doc, schema);
+      doc = JSON2form(doc, schema);
       self.form.doc(doc); 
     });
   });
@@ -45,8 +45,8 @@ export const qForm = (template, {schema, integer, float, date, autocomplete}) =>
 
   template.events({
     'documentSubmit': function (e, tmpl, doc) {
-        const obj = form2Object(doc, schema);
-        const valids = validate(obj, schema);
+        const obj = form2JSON(doc, schema);
+        const valids = validate(JSON2Object(obj, schema), schema);
         
         if(_.every(_.values(valids))){          
           Session.set(tmpl.data.output, obj);

@@ -75,7 +75,8 @@ export const JSON2Object = (jsonDoc, schema) => {
   const keys = Object.keys(jsonDoc);
   
   for(let k of keys){
-    let type = schema[k].type;
+    let k2 = k.split('$')[0];
+    let type = schema[k2].type;
     switch(type){
       case 'integer':
       case 'float':
@@ -143,16 +144,13 @@ export const queryJSON2Mongo = (query, schema) => {
 export const validate = (obj, schema) => {    
     ret = {};
     let doc = flatten(obj, {delimiter: '-'});
-    //const schemaKeys = Object.keys(schema);
 
     for(let k of Object.keys(schema)){ 
-        //ret[k] = true;
-        //if(k != '_id' && !_.include(schemaKeys, k)){
-        //if(_.include(schemaKeys, k)){  
-        //    continue;
-        //}
         ret[k] = true;
         const t1 = typeof doc[k];
+        if(_.isDate(doc[k])){
+          t1 = 'date';
+        }
         let t2 = schema[k].type;
         if(t2 == 'integer' || t2 == 'float' || t2 == 'decimal'){
             t2 = 'number';
@@ -169,6 +167,64 @@ export const validate = (obj, schema) => {
         }
     }
     return ret;
+}
+
+export const JSON2form = (obj, schema) => {
+  const ret = {};
+  obj = flatten(obj, {delimiter: '-'});
+  const keys = Object.keys(obj);
+  
+  for(let k of keys){
+    let k2 = k.split('$')[0];
+    let type = schema[k2].type;
+    switch(type){
+      case 'integer':
+      case 'float':
+      case 'string':
+      case 'decimal':
+      case 'boolean':
+        ret[k] = obj[k];
+        break; 
+      case 'date':
+        ret[k] = moment(obj[k]).format('DD-MM-YYYY');
+        break;  
+    }
+  }  
+  return ret;
+  //return flatten.unflatten(ret, {delimiter: '-'});
+}
+
+export const form2JSON = (raw, schema) => {
+  const ret = {};
+  const keys = Object.keys(raw);
+  
+  for(let k of keys){
+    let k2 = k.split('$')[0];
+    let type = schema[k2].type;
+    switch(type){
+      case 'integer':
+      case 'float':
+      case 'decimal':
+        if(raw[k] == ''){
+          ret[k] = undefined;
+        }else{
+          ret[k] = +raw[k];// || 0;
+        }
+        break;
+      case 'string':
+      case 'boolean':
+        ret[k] = raw[k];
+        break; 
+      case 'date':
+        if(raw[k] == ''){
+            ret[k] = undefined;
+        }else{
+            ret[k] = moment(raw[k], 'DD-MM-YYYY').toDate();
+        }
+        break;  
+    }
+  }  
+  return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 /*
