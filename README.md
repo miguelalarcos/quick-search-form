@@ -1,5 +1,4 @@
-quick-search-form
-=================
+# quick-search-form
 
 A wrap over useful:forms to generate form-objects.
 
