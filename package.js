@@ -19,7 +19,7 @@ Npm.depends({
 Package.onUse(function(api) {
   api.versionsFrom('1.4.4.2');
   api.use('ecmascript');
-  api.use('templating');
+  api.use('templating@1.3.2');
   api.use('tracker');
   api.use('session');
   api.use('useful:forms@1.1.3');
