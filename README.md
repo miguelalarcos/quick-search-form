@@ -1,5 +1,7 @@
-qForm
-=====
+quick-search-form
+=================
+
+A wrap over useful:forms to generate form-objects.
 
 This is a wrap over the intelligent package `useful:forms`. With `qForm` you change the way of thinking about forms. Now the form is not responsible of sending the data to the server. Now it just produce an object that you can manipulate and decide if to send to the server or whatever.
 
