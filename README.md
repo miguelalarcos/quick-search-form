@@ -116,7 +116,7 @@ And this is how to wrap the form:
 qForm(Template.my_search, {schema, integer});
 ```
 
-*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render:
+*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (I provide *integer*, *float*, *date* and *autocomplete*):
 
 ```javascript
 export const integer = (i) => {i.inputmask('Regex', { 
@@ -124,7 +124,8 @@ export const integer = (i) => {i.inputmask('Regex', {
     });
 }
 
-the_template.onRendered(function(){
+//internally
+template.onRendered(function(){
     if(integer) integer(this.$('.integer'));
     ...
 ```
