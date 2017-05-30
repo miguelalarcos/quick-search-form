@@ -20,7 +20,7 @@ Let's see an input example:
 <input type="text" name="a" class="integer" value={{doc 'a'}}>
 ```
 
-You can see first that we use the class to indicate the type. This is important to render the input. I recommend to install `eternicode:bootstrap-datepicker`, `bigdsk:inputmask` and `sergeyt:typeahead`.
+You can see first that we use the class to indicate the type. This is important to render the input.
 
 These are other inputs:
 
@@ -109,6 +109,28 @@ const schema_form = {
 ```
 
 There's a queryJSON2Mongo that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}` to `{x: {y: {$eq: value}}}`.
+
+And this is how to wrap the form:
+
+```javascript
+qForm(Template.my_search, {schema, integer});
+```
+
+*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render:
+
+```javascript
+export const integer = (i) => {i.inputmask('Regex', { 
+    regex: "^[+-]?\\d+$"
+    });
+}
+
+the_template.onRendered(function(){
+    if(integer) integer(this.$('.integer'));
+    ...
+```
+ I recommend to install `eternicode:bootstrap-datepicker`, `bigdsk:inputmask` and `sergeyt:typeahead`.
+
+---
 
 TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
 TODO: explain server side.
