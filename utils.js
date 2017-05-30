@@ -143,13 +143,15 @@ export const queryJSON2Mongo = (query, schema) => {
 export const validate = (obj, schema) => {    
     ret = {};
     let doc = flatten(obj, {delimiter: '-'});
-    const schemaKeys = Object.keys(schema);
+    //const schemaKeys = Object.keys(schema);
 
     for(let k of Object.keys(schema)){ 
+        //ret[k] = true;
+        //if(k != '_id' && !_.include(schemaKeys, k)){
+        //if(_.include(schemaKeys, k)){  
+        //    continue;
+        //}
         ret[k] = true;
-        if(k != '_id' && !_.include(schemaKeys, k)){
-            continue;
-        }
         const t1 = typeof doc[k];
         let t2 = schema[k].type;
         if(t2 == 'integer' || t2 == 'float' || t2 == 'decimal'){

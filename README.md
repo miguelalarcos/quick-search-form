@@ -94,14 +94,14 @@ This is another example of schema, with validation:
 const isBlank = (x)=>{return x == undefined || x == null || x == ''}
 
 const schema_form = {
-      a: {type: 'integer', message: 'a must be greater than 5', validate: (v) => {
+      a: {type: 'integer', message: 'a must be greater than 5', validate: (v, obj) => {
         if(!isBlank(v)){
           return v > 5;
         }
         return true;
       }
     },
-      b: {type: 'string', message: 'b is mandatory', validate: (v) => {
+      b: {type: 'string', message: 'b is mandatory', validate: (v, obj) => {
         return !isBlank(v);
       }
     },
@@ -131,12 +131,11 @@ template.onRendered(function(){
 ```
  I recommend to install `eternicode:bootstrap-datepicker`, `bigdsk:inputmask` and `sergeyt:typeahead`.
 
----
-
 TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
-TODO: explain server side.
 
----
+Server side:
+
+The *validate* function takes an object (remember it has decimals and moments) and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not.
 
 Example:
 
@@ -214,14 +213,14 @@ import './main.html';
 const isBlank = (x)=>{return x == undefined || x == null || x == ''}
 
 const schema_form = {
-      a: {type: 'integer', message: 'a must be greater than 5', validate: (v) => {
+      a: {type: 'integer', message: 'a must be greater than 5', validate: (v, obj) => {
         if(!isBlank(v)){
           return v > 5;
         }
         return true;
       }
     },
-      b: {type: 'string', message: 'b is mandatory', validate: (v) => {
+      b: {type: 'string', message: 'b is mandatory', validate: (v, obj) => {
         return !isBlank(v);
       }
     },
