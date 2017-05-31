@@ -7,15 +7,12 @@ export const object2form = (obj, schema) => {
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    let k2 = k.split('$')[0];
-    let type = schema[k2].type;
+    //let k2 = k.split('$')[0];
+    let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
       case 'string':
-      //case 'autocomplete':
-      //case 'select':
-      //case 'text':
       case 'boolean':
         ret[k] = obj[k];
         break; 
@@ -27,7 +24,6 @@ export const object2form = (obj, schema) => {
     }
   }  
   return ret;
-  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const form2Object = (raw, schema) => {
@@ -35,8 +31,8 @@ export const form2Object = (raw, schema) => {
   const keys = Object.keys(raw);
   
   for(let k of keys){
-    let k2 = k.split('$')[0];
-    let type = schema[k2].type;
+    //let k2 = k.split('$')[0];
+    let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
@@ -75,15 +71,12 @@ export const JSON2Object = (jsonDoc, schema) => {
   const keys = Object.keys(jsonDoc);
   
   for(let k of keys){
-    let k2 = k.split('$')[0];
-    let type = schema[k2].type;
+    //let k2 = k.split('$')[0];
+    let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
       case 'string':
-      //case 'autocomplete':
-      //case 'select':
-      //case 'text':
       case 'boolean':
         ret[k] = jsonDoc[k];
         break; 
@@ -99,20 +92,16 @@ export const JSON2Object = (jsonDoc, schema) => {
 
 export const object2JSON = (obj, schema) => {
   const ret = {};
-  //obj = obj || {};
   obj = flatten(obj, {delimiter: '-'});
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    let k2 = k.split('$')[0]; 
-    let type = schema[k2].type;
+    //let k2 = k.split('$')[0]; 
+    let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
       case 'string':
-      //case 'autocomplete':
-      //case 'select':
-      //case 'text':
       case 'boolean':
         ret[k] = obj[k];
         break; 
@@ -141,14 +130,15 @@ export const queryJSON2Mongo = (query, schema) => {
     return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-export const validate = (obj, schema) => {    
+export const validate = (doc, schema) => {   
+    let obj = JSON2Object(doc, schema); 
     ret = {};
-    let doc = flatten(obj, {delimiter: '-'});
+    let objf = flatten(obj, {delimiter: '-'});
 
     for(let k of Object.keys(schema)){ 
         ret[k] = true;
-        const t1 = typeof doc[k];
-        if(_.isDate(doc[k])){
+        const t1 = typeof objf[k];
+        if(_.isDate(objf[k])){
           t1 = 'date';
         }
         let t2 = schema[k].type;
@@ -161,7 +151,7 @@ export const validate = (obj, schema) => {
         }
         const v = schema[k].validate;        
 
-        if(v && !v(doc[k], obj)){
+        if(v && !v(objf[k], obj)){
             ret[k] = false;
             continue;
         }
@@ -175,8 +165,8 @@ export const JSON2form = (obj, schema) => {
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    let k2 = k.split('$')[0];
-    let type = schema[k2].type;
+    //let k2 = k.split('$')[0];
+    let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
@@ -199,8 +189,8 @@ export const form2JSON = (raw, schema) => {
   const keys = Object.keys(raw);
   
   for(let k of keys){
-    let k2 = k.split('$')[0];
-    let type = schema[k2].type;
+    //let k2 = k.split('$')[0];
+    let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':

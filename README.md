@@ -138,7 +138,7 @@ TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
 
 Server side:
 
-The *validate* function takes an object (remember it has decimals and moments) and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not.
+The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate property function with two arguments, the value of the property (*moment* and *decimal* way) and the full object.
 
 Example:
 
@@ -230,13 +230,10 @@ const schema_form = {
 };
 
 const schema = {
-      a: {type: 'integer'},
-      b: {type: 'boolean'},
-      c: {type: 'float'},
-      d: {type: 'autocomplete'},
-      e: {type: 'select'},
-      f: {type: 'date'},
-      'x-y': {type: 'string'}
+      a$lt: {type: 'integer'},
+      a$gt: {type: 'integer'},
+      b$eq: {type: 'boolean'},
+      'x-y$eq': {type: 'string'}
 }
 
 qForm(Template.my_search, {schema, integer});
