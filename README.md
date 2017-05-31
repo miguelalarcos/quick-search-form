@@ -76,12 +76,10 @@ The package is base on schemas like this:
 
 ```javascript
 const schema = {
-      a: {type: 'integer'},
-      f: {type: 'float'},
-      b: {type: 'boolean'},
-      c: {type: 'decimal'},
-      d: {type: 'date'},
-      'x-y': {type: 'string'}
+      a$lt: {type: 'integer'},
+      a$gt: {type: 'integer'},
+      b$eq: {type: 'boolean'},
+      'x-y$eq': {type: 'string'}
 }
 
 Template.hello.helpers({
