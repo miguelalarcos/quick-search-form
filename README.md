@@ -32,9 +32,10 @@ These are other inputs:
 
 <input type="checkbox" name="done" class="boolean" checked={{doc 'done'}}>
 
-<input class="autocomplete typeahead" name="team" type="text"
-       autocomplete="off" spellcheck="off" data-source="nba" data-template="item" data-value-key="name">
+<input class="autocomplete typeahead" name="team" value={{doc 'team'}} type="text" autocomplete="off" spellcheck="off" data-source="nba" data-template="item" data-value-key="name">
 ```
+
+And the `js` for the typeahead:
 
 ```javascript
 const getRemoteResults = (source, query, callback) => {
@@ -53,14 +54,13 @@ Template.hello.helpers({
   },
 ```
 
-The possible types are: string, boolean, integer, float, decimal and date. When you get the doc object of a form, the decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
+The possible types are: string, boolean, integer, float, decimal and date. Decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
 
-A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. The default state is JSON but the validate functions receives the doc in object form.
+A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. The default state is JSON, i.e, a form will output in JSON.
 
 An interesting thing of this package is to construct Mongo-like queries:
 
-```
-html
+```html
 <input type="text" name="a$lt" class="integer" value={{doc 'a$lt'}}>
 ```
 
@@ -89,6 +89,12 @@ Template.hello.helpers({
   ...
 ```
 
+Where the call to the template is:
+
+```html
+{{> my_search initial=initial output='output2'}}
+```
+
 This is another example of schema, with validation:
 
 ```javascript
@@ -109,7 +115,7 @@ const schema_form = {
 };
 ```
 
-There's a queryJSON2Mongo that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}` to `{x: {y: {$eq: value}}}`.
+There's a `queryJSON2Mongo` that construct a Mongo query from an object like the seen before: `{x: {y$eq: value}}` to `{x: {y: {$eq: value}}}`.
 
 And this is how to wrap the form:
 
@@ -117,7 +123,7 @@ And this is how to wrap the form:
 qForm(Template.my_search, {schema, integer});
 ```
 
-*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (I provide *integer*, *float*, *date* and *autocomplete*):
+*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (it provides you with *integer*, *float*, *date* and *autocomplete*):
 
 ```javascript
 export const integer = (i) => {i.inputmask('Regex', { 
@@ -136,7 +142,7 @@ TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
 
 Server side:
 
-The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate property function with two arguments, the value of the property (*moment* and *decimal* way) and the full object.
+The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object.
 
 Example:
 
