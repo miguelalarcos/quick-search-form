@@ -213,6 +213,18 @@ import './main.html';
 
 const isBlank = (x)=>{return x == undefined || x == null || x == ''}
 
+class Person{
+  constructor({name}){
+    this.name = name;
+  }
+  toPlain(){
+    return {name: this.name};
+  }
+  upper(){
+    this.name = this.name.toUpperCase();
+  }
+}
+
 const schema_form = {
       a: {type: 'integer', message: 'a must be greater than 5', validate: (v, doc) => {
         if(!isBlank(v)){
@@ -251,11 +263,15 @@ Template.hello.helpers({
     return JSON.stringify(obj, schema);
   },
   initial_form() {
-    return {a: 5};
+    return {a: 5, b: 'Alicante', person: new Person({name: 'miguel'})};
   },
   repr3(){
-    const obj = Session.get('output3') || {};
-    return JSON.stringify(obj, schema_form);
+    let doc = Session.get('output3') || {};
+    let obj = JSON2Object(doc, schema_form);
+    
+    obj.person && obj.person.upper();
+    doc = object2JSON(obj, schema_form);
+    return JSON.stringify(doc, schema_form);
   }
 });
 
