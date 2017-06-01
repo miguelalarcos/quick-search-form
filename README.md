@@ -193,6 +193,10 @@ Example:
         </form>
   </div>  
 </template>
+
+<template name="item">
+  <div>{{value}}</div>
+</template>
 ```
 
 ```javascript
