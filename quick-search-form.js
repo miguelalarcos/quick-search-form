@@ -3,7 +3,7 @@ import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
 //export { query2Mongo } from './quick-search-form-server.js';
-//export { object2JSON } from './utils.js';
+export { object2JSON, JSON2Object } from './utils.js';
 import { validate, form2JSON, JSON2form } from './utils.js'; //./quick-search-form-server.js';
 import flatten from 'flat';
 

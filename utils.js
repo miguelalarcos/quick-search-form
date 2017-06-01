@@ -72,14 +72,12 @@ export const JSON2Object = (jsonDoc, schema) => {
   const keys = Object.keys(jsonDoc);
   
   for(let k of keys){
-    //let k2 = k.split('$')[0];
     let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
       case 'string':
       case 'boolean':
-      case 'function':
         ret[k] = jsonDoc[k];
         break; 
       case 'decimal':
@@ -91,8 +89,8 @@ export const JSON2Object = (jsonDoc, schema) => {
   }  
   ret = flatten.unflatten(ret, {delimiter: '-'});
   for(let k of Object.keys(ret)){
-    if(schema[k].type == 'function'){
-      ret[k] = new schema[k](ret[k])
+    if(schema[k].type == 'klass'){
+      ret[k] = new schema[k].klass(ret[k]);
     }
   }
   return ret;
@@ -100,11 +98,17 @@ export const JSON2Object = (jsonDoc, schema) => {
 
 export const object2JSON = (obj, schema) => {
   const ret = {};
+  
+  for(let k of Object.keys(obj)){
+    if(schema[k].type == 'klass'){
+      obj[k] = obj[k].toPlain();
+    }
+  }
+
   obj = flatten(obj, {delimiter: '-'});
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    //let k2 = k.split('$')[0]; 
     let type = schema[k].type;
     switch(type){
       case 'integer':
@@ -117,9 +121,6 @@ export const object2JSON = (obj, schema) => {
         ret[k] = obj[k].toNumber();
       case 'date':
         ret[k] = obj[k].toDate();
-        break;  
-      case 'function':
-        ret[k] = obj[k].toJSON();
         break;  
     }
   }  
@@ -143,7 +144,7 @@ export const queryJSON2Mongo = (query, schema) => {
 
 export const validate = (doc, schema) => {   
     let obj = JSON2Object(doc, schema); 
-    console.log(obj);
+
     ret = {};
     let objf = flatten(obj, {delimiter: '-'});
 
