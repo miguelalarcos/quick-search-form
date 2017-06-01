@@ -17,9 +17,11 @@ export const float = (i) => {i.inputmask('Regex', {
     });
 }
 
-export const date = (i) => {i.datepicker()}
+export const date = (i) => {i.datepicker({
+  format: 'dd/mm/yyyy'
+})}
 
-export const autocomplete = (i) => {Meteor.typeahead.inject();}
+//export const autocomplete = (i) => {Meteor.typeahead.inject();}
 
 export const qForm = (template, {schema, integer, float, date, autocomplete}) => {
   Forms.mixin(template, {});

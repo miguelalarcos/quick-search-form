@@ -31,27 +31,6 @@ These are other inputs:
 <input type="text" class="date" name="dateOfBirth" value={{doc 'dateOfBirth'}}>
 
 <input type="checkbox" name="done" class="boolean" checked={{doc 'done'}}>
-
-<input class="autocomplete typeahead" name="team" value={{doc 'team'}} type="text" autocomplete="off" spellcheck="off" data-source="nba" data-template="item" data-value-key="name">
-```
-
-And the `js` for the typeahead:
-
-```javascript
-const getRemoteResults = (source, query, callback) => {
-    Meteor.call(source, query, {}, function(err, res) {
-        if (err) {
-          console.log(err);
-          return;
-        }
-        callback(res);
-    });
-}
-
-Template.hello.helpers({
-  nba(query, sync, callback){
-    getRemoteResults('nba', query, callback);
-  },
 ```
 
 The possible types are: string, boolean, integer, float, decimal and date. Decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
@@ -79,7 +58,8 @@ const schema = {
       a$lt: {type: 'integer'},
       a$gt: {type: 'integer'},
       b$eq: {type: 'boolean'},
-      'x-y$eq': {type: 'string'}
+      'x-y$eq': {type: 'string'},
+      fecha$eq: {type: 'date'}
 }
 
 Template.hello.helpers({
@@ -123,7 +103,7 @@ And this is how to wrap the form:
 qForm(Template.my_search, {schema, integer});
 ```
 
-*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (it provides you with *integer*, *float*, *date* and *autocomplete*):
+*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (it provides you with *integer*, *float* and *date*):
 
 ```javascript
 export const integer = (i) => {i.inputmask('Regex', { 
@@ -136,7 +116,7 @@ template.onRendered(function(){
     if(integer) integer(this.$('.integer'));
     ...
 ```
- I recommend to install `eternicode:bootstrap-datepicker`, `bigdsk:inputmask` and `sergeyt:typeahead`.
+ I recommend to install `eternicode:bootstrap-datepicker` and `bigdsk:inputmask`.
 
 TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
 
@@ -185,7 +165,11 @@ Example:
         <span>
             <span>nested es</span>
             <input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
-        </span>        
+        </span>       
+        <span>
+            <span>fecha es</span>
+            <input type="text" name="fecha$eq" class="date" value={{doc 'fecha$eq'}}>
+        </span>         
         <input type="submit" name="submit" value="Search">
         </form>
   </div>  
@@ -201,7 +185,8 @@ Example:
         <div class="error">{{errorMessage 'a'}}</div>
         <div>
             <span>b:</span>
-            <input type="text" name="b" class="string" value={{doc 'b'}}>
+            <!-- to use the next template you must add mizzao:autocomplete -->
+            {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
         </div>
         <div class="error">{{errorMessage 'b'}}</div>
         <input type="submit" name="submit" value="Form">
@@ -258,5 +243,41 @@ Template.hello.helpers({
     const obj = Session.get('output3') || {};
     return JSON.stringify(obj, schema_form);
   }
+});
+
+//mizzao:autocomplete client side
+Template.my_form.helpers({
+  settings: function() {
+    return {
+      position: "bottom",
+      limit: 5,
+      rules: [
+        {
+          subscription: 'search', 
+          field: "value",
+          template: Template.item
+        }        
+      ]
+    };
+  }
+});
+```
+
+mizzao:autocomplete server side:
+```javascript
+import { Meteor } from 'meteor/meteor';
+
+const dataC = new Mongo.Collection('cities');
+
+Meteor.startup(() => {
+  if(dataC.find({}).count() == 0){
+    dataC.insert({value: 'Madrid'});
+    dataC.insert({value: 'Murcia'});
+  }
+});
+
+Meteor.publish('search', function(q){
+  Autocomplete.publishCursor(dataC.find(q), this);
+  this.ready();
 });
 ```

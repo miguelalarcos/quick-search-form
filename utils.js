@@ -176,7 +176,7 @@ export const JSON2form = (obj, schema) => {
         ret[k] = obj[k];
         break; 
       case 'date':
-        ret[k] = moment(obj[k]).format('DD-MM-YYYY');
+        ret[k] = moment(obj[k]).format('DD/MM/YYYY');
         break;  
     }
   }  
@@ -209,7 +209,7 @@ export const form2JSON = (raw, schema) => {
         if(raw[k] == ''){
             ret[k] = undefined;
         }else{
-            ret[k] = moment(raw[k], 'DD-MM-YYYY').toDate();
+            ret[k] = moment(raw[k], 'DD/MM/YYYY').toDate();
         }
         break;  
     }
