@@ -66,7 +66,8 @@ export const form2Object = (raw, schema) => {
 }
 
 export const JSON2Object = (jsonDoc, schema) => {
-  const ret = {};
+  let ret = {};
+
   jsonDoc = flatten(jsonDoc, {delimiter: '-'});
   const keys = Object.keys(jsonDoc);
   
@@ -78,6 +79,7 @@ export const JSON2Object = (jsonDoc, schema) => {
       case 'float':
       case 'string':
       case 'boolean':
+      case 'function':
         ret[k] = jsonDoc[k];
         break; 
       case 'decimal':
@@ -87,7 +89,13 @@ export const JSON2Object = (jsonDoc, schema) => {
         break;  
     }
   }  
-  return flatten.unflatten(ret, {delimiter: '-'});
+  ret = flatten.unflatten(ret, {delimiter: '-'});
+  for(let k of Object.keys(ret)){
+    if(schema[k].type == 'function'){
+      ret[k] = new schema[k](ret[k])
+    }
+  }
+  return ret;
 }
 
 export const object2JSON = (obj, schema) => {
@@ -109,6 +117,9 @@ export const object2JSON = (obj, schema) => {
         ret[k] = obj[k].toNumber();
       case 'date':
         ret[k] = obj[k].toDate();
+        break;  
+      case 'function':
+        ret[k] = obj[k].toJSON();
         break;  
     }
   }  
@@ -132,6 +143,7 @@ export const queryJSON2Mongo = (query, schema) => {
 
 export const validate = (doc, schema) => {   
     let obj = JSON2Object(doc, schema); 
+    console.log(obj);
     ret = {};
     let objf = flatten(obj, {delimiter: '-'});
 

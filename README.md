@@ -189,6 +189,11 @@ Example:
             {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
         </div>
         <div class="error">{{errorMessage 'b'}}</div>
+        <div>
+            <span>person name:</span>
+            <input type="text" name="person-name" value={{doc 'person-name'}}>
+        </div>
+        <div class="error">{{errorMessage 'person-name'}}</div>        
         <input type="submit" name="submit" value="Form">
         </form>
   </div>  
@@ -220,6 +225,11 @@ const schema_form = {
         return !isBlank(v);
       }
     },
+    person: {type: Person},
+    'person-name': {type: 'string', message: 'name is mandatory', validate: (v, doc) => {
+        return !isBlank(v);
+    }
+  }
 };
 
 const schema = {
