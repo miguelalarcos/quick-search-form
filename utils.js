@@ -217,41 +217,19 @@ export const form2JSON = (raw, schema) => {
   return flatten.unflatten(ret, {delimiter: '-'});
 }
 
-/*
-const form2JSON = (raw, schema) => {
-  const ret = {};
-  const keys = Object.keys(raw);
-  
-  for(let k of keys){
-    k2 = k.split('$')[0];
-    let type = schema[k2].type;
-    switch(type){      
-      case 'integer':
-      case 'float':
-      case 'decimal':
-        if(raw[k] == ''){
-          ret[k] = undefined;
-        }else{
-          ret[k] = +raw[k];// || 0;
-        }
-        break;
-      case 'string':
-      case 'autocomplete':
-      case 'select':
-        ret[k] = raw[k];
-        break;
-      case 'boolean':
-        ret[k] = raw[k];
-        break;  
-      case 'date':
-        if(raw[k] == ''){
-            ret[k] = undefined;
-        }else{
-            ret[k] = moment(raw[k], 'DD-MM-YYYY').toDate();
-        }
-        break;  
+export class qBase{
+  constructor(doc, schema){
+    this._schema = schema;
+    let obj = JSON2Object(doc, schema);
+    for(let k of Object.keys(obj)){
+      this[k] = obj[k];
     }
   }
-  return flatten.unflatten(ret, {delimiter: '-'});
+  toJSON(){
+    let ret = {};
+    for(let k of Object.keys(this._schema)){
+      ret[k] = this[k];
+    }
+    return object2JSON(ret, this._schema);
+  }
 }
-*/
