@@ -11,10 +11,11 @@ For example, one of the things you can do with this package is to create a searc
 Youc could have something like this: (inputs and outputs are the keys of Session vars)
 
 ```html
-{{> clientsSearch output='query'}}
-{{> clientsTable input='query' output='clientSelected'}}
-{{> clientForm input='clientSelected' output='client'}}
-<!-- then in js code you have an autorun on session 'client' that insert or update to a Mongo collection -->
+{{> clientsSearch output='query'}} <!-- the clientsSearch form produces
+an object like `{initDate$gte: date1, endDate$lte: date2}` and puts to Session query -->
+{{> clientsTable input='query' output='clientSelected'}} <!-- clientsTable listen to Session query and subscribe to server with that query. When you select a client in the table, it is put to Session clientSelected -->
+{{> clientForm input='clientSelected' output='client'}} <!-- clientForm listen to Session clientSelected and puts the doc when submitted into Session client -->
+<!-- then in js code you have an autorun on session 'client' that inserts or updates to a Mongo collection after an optional manipulation -->
 ```
 
 Let's see an input example:
@@ -23,7 +24,7 @@ Let's see an input example:
 <input type="text" name="a" class="integer" value={{doc 'a'}}>
 ```
 
-You can see first that we use the class to indicate the type. This is important to render the input.
+First, you can see that we use the class to indicate the type. This is important to render the input.
 
 These are other inputs:
 
@@ -38,6 +39,11 @@ The possible types are: string, boolean, integer, float, decimal and date. Decim
 A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. A form will output in JSON. To help the things, you can do the next:
 
 ``` javascript
+const schema_form = {
+      a: {type: 'integer'},
+      b: {type: 'string'}
+};
+
 class AB extends qBase{
   constructor(doc){
     super(doc, AB.schema);
@@ -93,7 +99,7 @@ Template.hello.helpers({
   ...
 ```
 
-Where the call to the template is:
+And the call to the template is:
 
 ```html
 {{> my_search initial=initial output='output2'}}
@@ -124,10 +130,12 @@ There's a `queryJSON2Mongo` that construct a Mongo query from an object like the
 And this is how to wrap the form:
 
 ```javascript
+import { qForm, integer, float, date, qBase } from 'meteor/miguelalarcos:quick-search-form';
+
 qForm(Template.my_search, {schema, integer});
 ```
 
-*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (it provides you with *integer*, *float* and *date*):
+*integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (this package provides you with *integer*, *float* and *date*):
 
 ```javascript
 export const integer = (i) => {i.inputmask('Regex', { 
@@ -175,19 +183,19 @@ Example:
   <div>
     <form class="search">
         <span>
-            <span>a menor que</span>
+            <span>a less than</span>
             <input type="text" name="a$lt" class="integer" value={{doc 'a$lt'}}>
         </span>
         <span>
-            <span>a mayor que</span>
+            <span>a greater than</span>
             <input type="text" name="a$gt" class="integer" value={{doc 'a$gt'}}>
         </span>
         <span>
-            <span>b es</span>
+            <span>b is</span>
             <input type="checkbox" name="b$eq" class="boolean" checked={{doc 'b$eq'}}>
         </span>
         <span>
-            <span>nested es</span>
+            <span>nested is</span>
             <input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
         </span>       
         <span>
