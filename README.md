@@ -209,7 +209,8 @@ Example:
         <div class="error">{{errorMessage 'a'}}</div>
         <div>
             <span>b:</span>
-            <!-- to use the next template you must add mizzao:autocomplete -->
+            <!-- to use the next template you must add mizzao:autocomplete 
+            It doesn't work right now because its input doesn't trigger change event when the text of the input changes when clicking in an item of the popover. You can build your own autocomplete with the only requisite that the input triggers the change event whenever it changes its value. -->
             {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
         </div>
         <div class="error">{{errorMessage 'b'}}</div>
@@ -278,7 +279,7 @@ Template.hello.helpers({
     return JSON.stringify(obj);
   },
   initial_form() {
-    return {a: 5, b: 'Alicante'}; 
+    return (new AB({a: 5, b: 'Murcia'})).toJSON();
   },
   repr3(){
     let doc = Session.get('output3') || {};
