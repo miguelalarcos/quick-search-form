@@ -232,4 +232,7 @@ export class qBase{
     }
     return object2JSON(ret, this._schema);
   }
+  validate(){
+    return validate(this.toJSON(), this._schema);
+  }
 }

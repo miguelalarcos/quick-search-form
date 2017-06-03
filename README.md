@@ -156,6 +156,8 @@ Server side:
 
 The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object.
 
+But it's easiest to build like `let ab = new AB(docJSON);` and then call *validate* on it: `let flags = ab.validate()`.
+
 Example:
 
 ```html
@@ -217,6 +219,8 @@ Example:
         <div class="error">{{errorMessage 'a'}}</div>
         <div>
             <span>b:</span>
+            <!--<input type="text" name="b" class="string" value={{doc 'b'}}> -->
+
             <!-- to use the next template you must add mizzao:autocomplete 
             It doesn't work right now because its input doesn't trigger change event when the text of the input changes when clicking in an item of the popover. You can build your own autocomplete with the only requisite that the input triggers the change event whenever it changes its value. -->
             {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
@@ -226,16 +230,12 @@ Example:
         </form>
   </div>  
 </template>
-
-<template name="item">
-  <div>{{value}}</div>
-</template>
 ```
 
 ```javascript
 import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
-import { qForm, integer, float, date, qBase } from 'meteor/miguelalarcos:quick-search-form';
+import { qForm, integer, float, date, qBase, queryJSON2Mongo } from 'meteor/miguelalarcos:quick-search-form';
 
 import './main.html';
 
@@ -283,8 +283,9 @@ Template.hello.helpers({
     return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}};
   },
   repr2(){
-    const obj = Session.get('output2') || {};
-    return JSON.stringify(obj);
+    let doc = Session.get('output2') || {};
+    doc = queryJSON2Mongo(doc, schema);
+    return JSON.stringify(doc);
   },
   initial_form() {
     return (new AB({a: 5, b: 'Murcia'})).toJSON();
@@ -296,40 +297,5 @@ Template.hello.helpers({
     doc = ab.toJSON();
     return JSON.stringify(doc);
   }
-});
-
-Template.my_form.helpers({
-  settings: function() {
-    return {
-      position: "bottom",
-      limit: 5,
-      rules: [
-        {
-          subscription: 'search', 
-          field: "value",
-          template: Template.item
-        }        
-      ]
-    };
-  }
-});
-```
-
-mizzao:autocomplete server side:
-```javascript
-import { Meteor } from 'meteor/meteor';
-
-const dataC = new Mongo.Collection('cities');
-
-Meteor.startup(() => {
-  if(dataC.find({}).count() == 0){
-    dataC.insert({value: 'Madrid'});
-    dataC.insert({value: 'Murcia'});
-  }
-});
-
-Meteor.publish('search', function(q){
-  Autocomplete.publishCursor(dataC.find(q), this);
-  this.ready();
 });
 ```
