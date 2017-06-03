@@ -6,6 +6,7 @@ import Decimal from 'decimal.js';
 export { qBase } from './utils.js';
 import { validate, form2JSON, JSON2form } from './utils.js'; //./quick-search-form-server.js';
 import flatten from 'flat';
+import clone from 'clone';
 
 export const integer = (i) => {i.inputmask('Regex', { 
     regex: "^[+-]?\\d+$"
@@ -30,6 +31,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete}) =>
     let self = this;
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
+      doc = clone(doc, false);
       doc = JSON2form(doc, schema);
       self.form.doc(doc); 
     });
@@ -46,14 +48,19 @@ export const qForm = (template, {schema, integer, float, date, autocomplete}) =>
   });
 
   template.events({
+    'click .reset'(evt, tmpl){
+      let doc = tmpl.data.initial || {};
+      doc = clone(doc, false);
+      tmpl.form.doc(doc);
+    },
     'documentSubmit': function (e, tmpl, doc) {
-        const obj = form2JSON(doc, schema);
-        //const valids = validate(JSON2Object(obj, schema), schema);
+        let obj = form2JSON(doc, schema);        
         const valids = validate(obj, schema);
         
         if(_.every(_.values(valids))){          
+          obj = clone(obj, false);
           Session.set(tmpl.data.output, obj);
-          tmpl.form.doc({});
+          //tmpl.form.doc({});
         }else{
           for(let k of Object.keys(valids)){
             if(!valids[k]){

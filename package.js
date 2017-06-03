@@ -1,6 +1,6 @@
 Package.describe({
   name: 'miguelalarcos:quick-search-form',
-  version: '0.0.5',
+  version: '0.0.6',
   // Brief, one-line summary of the package.
   summary: 'A wrap over useful:forms to generate form-objects.',
   // URL to the Git repository containing the source code for this package.
@@ -13,7 +13,8 @@ Package.describe({
 Npm.depends({
   "decimal.js": "7.2.1",
   "moment": "2.18.1",
-  "flat": "2.0.1"
+  "flat": "2.0.1",
+  "clone": "2.1.1"
 });
 
 Package.onUse(function(api) {
