@@ -233,6 +233,7 @@ export class qBase{
     return object2JSON(ret, this._schema);
   }
   validate(){
-    return validate(this.toJSON(), this._schema);
+    const valids = validate(this.toJSON(), this._schema);    
+    return _.every(_.values(valids))
   }
 }

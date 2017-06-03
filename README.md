@@ -156,7 +156,7 @@ Server side:
 
 The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object.
 
-But it's easiest to build like `let ab = new AB(docJSON);` and then call *validate* on it: `let flags = ab.validate()`.
+But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.validate()`.
 
 Example:
 
