@@ -1,5 +1,53 @@
 import moment from 'moment';
+import Decimal from 'decimal.js';
 import flatten from 'flat';
+
+const flatten2 = (doc, schema, sep='-') => {
+  const ret = {};
+  const values = rflatten(doc, schema, '', sep);
+  for(let x of values){
+    ret[x.path] = x.doc;
+  }
+  return ret;
+}
+
+const rflatten = (doc, schema, path='', sep='-') => {
+  if(schema[path]){  
+    return {path, doc};
+  }
+  const ret = [];
+  for(let key of Object.keys(doc)){
+    if(path == ''){
+      path = key;
+    }else{
+      path = path + '-' + key;
+    }
+    const f = rflatten(doc[key], schema, path);
+    if(_.isArray(f)){
+      for(let v of f){
+        ret.push(v);
+      }
+    }else{
+      ret.push(f);
+    }
+  }
+  return ret;
+}
+
+const unflatten = (doc, sep='-') => {
+  const ret = {};
+  for(let k of Object.keys(doc)){
+    let aux = ret;
+    const fields = k.split(sep);
+    const last = fields.pop();
+    for(let field of fields){
+      aux[field] = aux[field] || {};
+      aux = aux[field];
+    }
+    aux[last] = doc[k];
+  }
+  return ret;
+}
 
 export const object2form = (obj, schema) => {
   const ret = {};
@@ -18,6 +66,7 @@ export const object2form = (obj, schema) => {
         break; 
       case 'decimal':
         ret[k] = obj[k].toString();
+        break;
       case 'date':
         ret[k] = obj[k].format('DD-MM-YYYY');
         break;  
@@ -53,6 +102,7 @@ export const form2Object = (raw, schema) => {
         break; 
       case 'decimal':
         ret[k] = new Decimal(raw[k]);   
+        break;
       case 'date':
         if(raw[k] == ''){
             ret[k] = undefined;
@@ -67,11 +117,11 @@ export const form2Object = (raw, schema) => {
 
 export const JSON2Object = (jsonDoc, schema) => {
   const ret = {};
-  jsonDoc = flatten(jsonDoc, {delimiter: '-'});
+  //jsonDoc = flatten(jsonDoc, {delimiter: '-'});
+  jsonDoc = flatten2(jsonDoc, schema);
   const keys = Object.keys(jsonDoc);
   
   for(let k of keys){
-    //let k2 = k.split('$')[0];
     let type = schema[k].type;
     switch(type){
       case 'integer':
@@ -82,21 +132,25 @@ export const JSON2Object = (jsonDoc, schema) => {
         break; 
       case 'decimal':
         ret[k] = new Decimal(jsonDoc[k]);   
+        break;
       case 'date':
         ret[k] = moment(jsonDoc[k]);
         break;  
     }
   }  
-  return flatten.unflatten(ret, {delimiter: '-'});
+  return unflatten(ret);
+  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const object2JSON = (obj, schema) => {
   const ret = {};
-  obj = flatten(obj, {delimiter: '-'});
+  console.log(obj);
+  //obj = flatten(obj, {delimiter: '-'});
+  obj = flatten2(obj, schema);  
+  console.log(obj);
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    //let k2 = k.split('$')[0]; 
     let type = schema[k].type;
     switch(type){
       case 'integer':
@@ -107,12 +161,14 @@ export const object2JSON = (obj, schema) => {
         break; 
       case 'decimal':
         ret[k] = obj[k].toNumber();
+        break;
       case 'date':
         ret[k] = obj[k].toDate();
         break;  
     }
   }  
-  return flatten.unflatten(ret, {delimiter: '-'});
+  return unflatten(ret);
+  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const queryJSON2Mongo = (query, schema) => {
@@ -165,13 +221,14 @@ export const JSON2form = (obj, schema) => {
   const keys = Object.keys(obj);
   
   for(let k of keys){
-    //let k2 = k.split('$')[0];
     let type = schema[k].type;
     switch(type){
       case 'integer':
       case 'float':
       case 'string':
       case 'decimal':
+        ret[k] = obj[k] + '';
+        break;
       case 'boolean':
         ret[k] = obj[k];
         break; 
@@ -181,7 +238,6 @@ export const JSON2form = (obj, schema) => {
     }
   }  
   return ret;
-  //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const form2JSON = (raw, schema) => {
@@ -189,7 +245,6 @@ export const form2JSON = (raw, schema) => {
   const keys = Object.keys(raw);
   
   for(let k of keys){
-    //let k2 = k.split('$')[0];
     let type = schema[k].type;
     switch(type){
       case 'integer':
