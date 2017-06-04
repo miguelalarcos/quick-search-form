@@ -1,6 +1,6 @@
 import { Tinytest } from "meteor/tinytest";
 //import {  } from "meteor/miguelalarcos:quick-search-form";
-import { queryJSON2Mongo, form2JSON, JSON2form } from './utils.js';
+import { queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 
 Tinytest.add('queryJSON2Mongo - query simple one parameter', function (test) {  
   const queryJSON = {"a$gt": 5};
@@ -45,5 +45,12 @@ Tinytest.add('form2JSON - nested', function (test) {
   const formDoc = {'x-y-z': 5};
   const JSONDoc = form2JSON(formDoc, schemaNested);
   const expected = {x:{y:{z:5}}};
+  test.equal(JSONDoc, expected);
+});
+
+Tinytest.add('JSON2Object object2JSON - nested', function (test) {  
+  const JSONDoc = {x:{y:{z:5}}};
+  const objectDoc = JSON2Object(JSONDoc, schemaNested);
+  const expected = object2JSON(objectDoc, schemaNested);
   test.equal(JSONDoc, expected);
 });
