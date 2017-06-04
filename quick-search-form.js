@@ -23,7 +23,7 @@ export const date = (i) => {i.datepicker({
 
 //export const autocomplete = (i) => {Meteor.typeahead.inject();}
 
-export const qForm = (template, {schema, integer, float, date, autocomplete}) => {
+export const qForm = (template, {schema, integer, float, date, autocomplete, callback}) => {
   Forms.mixin(template, {});
 
   template.onCreated(function(){
@@ -52,7 +52,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete}) =>
       doc = clone(doc, false);
       tmpl.form.doc(doc);
     },
-    'documentSubmit': function (e, tmpl, doc) {
+    'documentSubmit': function (e, tmpl, doc) {//TODO: don't use name obj, use name doc
         let obj = form2JSON(doc, schema);        
         const valids = validate(obj, schema);
         
@@ -60,6 +60,9 @@ export const qForm = (template, {schema, integer, float, date, autocomplete}) =>
           obj = clone(obj, false);
           Session.set(tmpl.data.output, obj);
           //tmpl.form.doc({});
+          if(callback){
+            callback(obj);
+          }
         }else{
           for(let k of Object.keys(valids)){
             if(!valids[k]){
