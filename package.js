@@ -33,6 +33,8 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use('ecmascript');
   api.use('tinytest');
+  api.use('underscore');
+  api.imply('underscore');
   api.use('miguelalarcos:quick-search-form');
   api.mainModule('quick-search-form-tests.js');
 });

@@ -123,7 +123,7 @@ export const queryJSON2Mongo = (query, schema) => {
         let k = seg[0];
         let mod = seg[1];
         if(k && _.include(['eq', 'lt', 'lte', 'gt', 'gte'], mod)){
-            ret[k] = {};
+            ret[k] = ret[k] || {};
             ret[k]['$'+mod] = query[key];
         }
     }
