@@ -1,19 +1,21 @@
 import moment from 'moment';
 import Decimal from 'decimal.js';
-//import flatten from 'flat';
 
-const flatten = (doc, schema, sep='-') => {
+const _sep = '.';
+
+const flatten = (doc, schema, sep=_sep) => {
   const ret = {};
   const values = rflatten(doc, schema, '', sep);
+  
   for(let x of values){
     ret[x.path] = x.doc;
   }
   return ret;
 }
 
-const rflatten = (doc, schema, path='', sep='-') => {
-  //console.log('/'+path+'/', schema);
-  if(schema[path]){  
+const rflatten = (doc, schema, path, sep) => {
+
+  if(schema[path]){ 
     return {path, doc};
   }
   const ret = [];
@@ -22,9 +24,9 @@ const rflatten = (doc, schema, path='', sep='-') => {
     if(path == ''){
       path_ = key;
     }else{
-      path_ = path + '-' + key;
+      path_ = path + sep + key;
     }
-    const f = rflatten(doc[key], schema, path_);
+    const f = rflatten(doc[key], schema, path_, sep);
     if(_.isArray(f)){
       for(let v of f){
         ret.push(v);
@@ -36,7 +38,7 @@ const rflatten = (doc, schema, path='', sep='-') => {
   return ret;
 }
 
-const unflatten = (doc, sep='-') => {
+const unflatten = (doc, sep=_sep) => {
   const ret = {};
   for(let k of Object.keys(doc)){
     let aux = ret;
@@ -51,6 +53,7 @@ const unflatten = (doc, sep='-') => {
   return ret;
 }
 
+/*
 export const object2form = (obj, schema) => {
   const ret = {};
   obj = flatten(obj, {delimiter: '-'});
@@ -116,6 +119,7 @@ export const form2Object = (raw, schema) => {
   }  
   return flatten.unflatten(ret, {delimiter: '-'});
 }
+*/
 
 export const JSON2Object = (jsonDoc, schema) => {
   const ret = {};
@@ -222,7 +226,6 @@ export const validate = (doc, schema) => {
 
 export const JSON2form = (obj, schema) => {
   const ret = {};
-  
   obj = flatten(obj, schema);  
   const keys = Object.keys(obj);
   
@@ -259,7 +262,7 @@ export const form2JSON = (raw, schema) => {
         if(raw[k] == ''){
           ret[k] = undefined;
         }else{
-          ret[k] = +raw[k];// || 0;
+          ret[k] = +raw[k] || 0;
         }
         break;
       case 'string':
@@ -267,10 +270,11 @@ export const form2JSON = (raw, schema) => {
         ret[k] = raw[k];
         break; 
       case 'date':
-        if(raw[k] == ''){
+        const m = moment(raw[k], 'DD/MM/YYYY');
+        if(!m.isValid()){
             ret[k] = undefined;
         }else{
-            ret[k] = moment(raw[k], 'DD/MM/YYYY').toDate();
+            ret[k] = m.toDate();
         }
         break;  
     }

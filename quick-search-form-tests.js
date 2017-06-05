@@ -36,17 +36,19 @@ Tinytest.add('form2JSON JSON2form - simple', function (test) {
   test.equal(formDoc, expected);
 });
 
-const schemaNested = {'x-y-z': {type: 'integer'}, d: {type: 'decimal'}, f: {type: 'date'}}
+const schemaNested = {'x.y.z': {type: 'integer'}, d: {type: 'decimal'}, f: {type: 'date'}}
 
 Tinytest.add('form2JSON JSON2form - nested', function (test) {  
-  const formDoc = {'x-y-z': '5'};
+  const formDoc = {'x.y.z': '5'};
   const JSONDoc = form2JSON(formDoc, schemaNested);
+  console.log(JSONDoc);
   const expected = JSON2form(JSONDoc, schemaNested);  
   test.equal(formDoc, expected);
 });
 
+
 Tinytest.add('form2JSON - nested', function (test) {  
-  const formDoc = {'x-y-z': '5'};
+  const formDoc = {'x.y.z': '5'};
   const JSONDoc = form2JSON(formDoc, schemaNested);
   const expected = {x:{y:{z:5}}};
   test.equal(JSONDoc, expected);
@@ -103,3 +105,4 @@ Tinytest.add('validate - full', function (test) {
   const expected = {b:true, c: true, d: false, e: false, f:false};
   test.equal(valids, expected);
 });
+

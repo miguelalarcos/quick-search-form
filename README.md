@@ -18,6 +18,7 @@ an object like `{initDate$gte: date1, endDate$lte: date2}` and puts to Session q
 {{> clientsTable input='query' output='clientSelected'}} <!-- clientsTable listen to Session query and subscribe to server with that query. When you select a client in the table, it is put to Session clientSelected -->
 {{> clientForm input='clientSelected' output='client'}} <!-- clientForm listen to Session clientSelected and puts the doc when submitted into Session client -->
 <!-- then in js code you have an autorun on session 'client' that inserts or updates to a Mongo collection after an optional manipulation -->
+<!-- other way is to use the callback function explained later-->
 ```
 
 Let's see an input example:
@@ -75,12 +76,12 @@ An interesting thing of this package is to construct Mongo-like queries:
 <input type="text" name="a$lt" class="integer" value={{doc 'a$lt'}}>
 ```
 
-You can have nested properties. The character '-' is reserved to indicate the nested. The character '$' is used to indicate a Mongo operator:
+You can have nested properties. The character '.' is reserved to indicate the nested. The character '$' is used to indicate a Mongo operator:
 
-'x-y$eq' is resolved to `{x: {y$eq: value}}`.
+'x.y$eq' is resolved to `{x: {y$eq: value}}`.
 
 ```html
-<input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
+<input type="text" name="x.y$eq" class="text" value={{doc 'x.y$eq'}}>
 ```
 
 The package is base on schemas like this:
@@ -90,7 +91,7 @@ const schema = {
       a$lt: {type: 'integer'},
       a$gt: {type: 'integer'},
       b$eq: {type: 'boolean'},
-      'x-y$eq': {type: 'string'},
+      'x.y$eq': {type: 'string'},
       fecha$eq: {type: 'date'}
 }
 
@@ -202,7 +203,7 @@ Example:
         </span>
         <span>
             <span>nested is</span>
-            <input type="text" name="x-y$eq" class="text" value={{doc 'x-y$eq'}}>
+            <input type="text" name="x.y$eq" class="text" value={{doc 'x.y$eq'}}>
         </span>       
         <span>
             <span>fecha es</span>
@@ -275,7 +276,7 @@ const schema = {
       a$lt: {type: 'integer'},
       a$gt: {type: 'integer'},
       b$eq: {type: 'boolean'},
-      'x-y$eq': {type: 'string'},
+      'x.y$eq': {type: 'string'},
       fecha$eq: {type: 'date'}
 }
 
