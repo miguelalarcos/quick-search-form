@@ -134,7 +134,7 @@ And this is how to wrap the form:
 ```javascript
 import { qForm, integer, float, date, qBase } from 'meteor/miguelalarcos:quick-search-form';
 
-const callback = (JSONDoc) => {}
+const callback = (JSONDoc) => {someCollection.insert(JSONDoc);}
 
 qForm(Template.my_search, {schema, integer, callback});
 ```

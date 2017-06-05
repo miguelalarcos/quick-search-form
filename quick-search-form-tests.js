@@ -1,6 +1,6 @@
 import { Tinytest } from "meteor/tinytest";
 //import {  } from "meteor/miguelalarcos:quick-search-form";
-import { queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
+import { validate, queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 import Decimal from 'decimal.js';
 import moment from 'moment';
 
@@ -87,4 +87,19 @@ Tinytest.add('object2JSON - date simple', function (test) {
   const JSONDoc = object2JSON(objectDoc, schemaNested);
   const expected = {f: date.toDate()};
   test.equal(JSONDoc, expected);
+});
+
+const schema_validate = {
+  b: {type: 'string'},
+  c: {type: 'integer', validate: (v)=>v>5},
+  d: {type: 'integer', validate: (v)=>v>5},
+  e: {type: 'string'},
+  f: {type: 'string', validate: (v)=> v != '' && v!= undefined && v!= null}
+}
+
+Tinytest.add('validate - full', function (test) {  
+  const obj = {b:'hello', c:6, d:3, e: false};
+  const valids = validate(obj, schema_validate);
+  const expected = {b:true, c: true, d: false, e: false, f:false};
+  test.equal(valids, expected);
 });
