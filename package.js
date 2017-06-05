@@ -13,7 +13,7 @@ Package.describe({
 Npm.depends({
   "decimal.js": "7.2.1",
   "moment": "2.18.1",
-  "flat": "2.0.1",
+  //"flat": "2.0.1",
   "clone": "2.1.1"
 });
 

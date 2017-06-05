@@ -55,7 +55,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     'documentSubmit': function (e, tmpl, doc) {//TODO: don't use name obj, use name doc
         let obj = form2JSON(doc, schema);        
         const valids = validate(obj, schema);
-        
+
         if(_.every(_.values(valids))){          
           obj = clone(obj, false);
           Session.set(tmpl.data.output, obj);

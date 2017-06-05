@@ -2,6 +2,7 @@ import { Tinytest } from "meteor/tinytest";
 //import {  } from "meteor/miguelalarcos:quick-search-form";
 import { queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 import Decimal from 'decimal.js';
+import moment from 'moment';
 
 mongoSchema = {a$gt: {type: 'integer'}, a$lt: {type: 'integer'}, b$eq: {type: 'string'}};
 
@@ -35,7 +36,7 @@ Tinytest.add('form2JSON JSON2form - simple', function (test) {
   test.equal(formDoc, expected);
 });
 
-const schemaNested = {'x-y-z': {type: 'integer'}, d: {type: 'decimal'}}
+const schemaNested = {'x-y-z': {type: 'integer'}, d: {type: 'decimal'}, f: {type: 'date'}}
 
 Tinytest.add('form2JSON JSON2form - nested', function (test) {  
   const formDoc = {'x-y-z': '5'};
@@ -69,5 +70,21 @@ Tinytest.add('object2JSON - simple', function (test) {
   const objectDoc = {d: new Decimal('5.0')};
   const JSONDoc = object2JSON(objectDoc, schemaNested);
   const expected = {d: 5.0};
+  test.equal(JSONDoc, expected);
+});
+
+Tinytest.add('JSON2Object - date simple', function (test) {  
+  const date = new Date();
+  const JSONDoc = {f: date};
+  const objectDoc = JSON2Object(JSONDoc, schemaNested);
+  const expected = {f: moment(date)};
+  test.equal(objectDoc, expected);
+});
+
+Tinytest.add('object2JSON - date simple', function (test) {  
+  const date = moment();  
+  const objectDoc = {f: date};
+  const JSONDoc = object2JSON(objectDoc, schemaNested);
+  const expected = {f: date.toDate()};
   test.equal(JSONDoc, expected);
 });

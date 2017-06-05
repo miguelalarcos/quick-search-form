@@ -187,19 +187,19 @@ export const queryJSON2Mongo = (query, schema) => {
         }
     }
     return unflatten(ret);
-    //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const validate = (doc, schema) => {   
     let obj = JSON2Object(doc, schema); 
     ret = {};
-    //let objf = flatten(obj, {delimiter: '-'});
+    
     let objf = flatten(obj, schema);  
 
     for(let k of Object.keys(schema)){ 
         ret[k] = true;
         const t1 = typeof objf[k];
-        if(_.isDate(objf[k])){
+
+        if(moment.isMoment(objf[k])){  
           t1 = 'date';
         }
         let t2 = schema[k].type;
@@ -222,7 +222,7 @@ export const validate = (doc, schema) => {
 
 export const JSON2form = (obj, schema) => {
   const ret = {};
-  //obj = flatten(obj, {delimiter: '-'});
+  
   obj = flatten(obj, schema);  
   const keys = Object.keys(obj);
   
