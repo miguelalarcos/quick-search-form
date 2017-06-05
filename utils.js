@@ -12,17 +12,19 @@ const flatten2 = (doc, schema, sep='-') => {
 }
 
 const rflatten = (doc, schema, path='', sep='-') => {
+  //console.log('/'+path+'/', schema);
   if(schema[path]){  
     return {path, doc};
   }
   const ret = [];
   for(let key of Object.keys(doc)){
+    let path_;
     if(path == ''){
-      path = key;
+      path_ = key;
     }else{
-      path = path + '-' + key;
+      path_ = path + '-' + key;
     }
-    const f = rflatten(doc[key], schema, path);
+    const f = rflatten(doc[key], schema, path_);
     if(_.isArray(f)){
       for(let v of f){
         ret.push(v);
@@ -144,10 +146,10 @@ export const JSON2Object = (jsonDoc, schema) => {
 
 export const object2JSON = (obj, schema) => {
   const ret = {};
-  console.log(obj);
+  
   //obj = flatten(obj, {delimiter: '-'});
   obj = flatten2(obj, schema);  
-  console.log(obj);
+  
   const keys = Object.keys(obj);
   
   for(let k of keys){
@@ -172,7 +174,8 @@ export const object2JSON = (obj, schema) => {
 }
 
 export const queryJSON2Mongo = (query, schema) => {
-    query = flatten(query, {delimiter: '-'});
+    //query = flatten(query, {delimiter: '-'});
+    query = flatten2(query, schema);  
     ret = {};
     for(let key of Object.keys(query)){
         let seg = key.split('$');
@@ -183,13 +186,15 @@ export const queryJSON2Mongo = (query, schema) => {
             ret[k]['$'+mod] = query[key];
         }
     }
-    return flatten.unflatten(ret, {delimiter: '-'});
+    return unflatten(ret);
+    //return flatten.unflatten(ret, {delimiter: '-'});
 }
 
 export const validate = (doc, schema) => {   
     let obj = JSON2Object(doc, schema); 
     ret = {};
     let objf = flatten(obj, {delimiter: '-'});
+    //let objf = flatten2(obj, schema);  
 
     for(let k of Object.keys(schema)){ 
         ret[k] = true;
@@ -217,7 +222,8 @@ export const validate = (doc, schema) => {
 
 export const JSON2form = (obj, schema) => {
   const ret = {};
-  obj = flatten(obj, {delimiter: '-'});
+  //obj = flatten(obj, {delimiter: '-'});
+  obj = flatten2(obj, schema);  
   const keys = Object.keys(obj);
   
   for(let k of keys){
@@ -269,7 +275,8 @@ export const form2JSON = (raw, schema) => {
         break;  
     }
   }  
-  return flatten.unflatten(ret, {delimiter: '-'});
+  //return flatten.unflatten(ret, {delimiter: '-'});
+  return unflatten(ret);
 }
 
 export class qBase{

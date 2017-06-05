@@ -3,24 +3,26 @@ import { Tinytest } from "meteor/tinytest";
 import { queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 import Decimal from 'decimal.js';
 
+mongoSchema = {a$gt: {type: 'integer'}, a$lt: {type: 'integer'}, b$eq: {type: 'string'}};
+
 Tinytest.add('queryJSON2Mongo - query simple one parameter', function (test) {  
   const queryJSON = {"a$gt": 5};
   const expected = {a: {$gt: 5}};
-  const mongoQ = queryJSON2Mongo(queryJSON);
+  const mongoQ = queryJSON2Mongo(queryJSON, mongoSchema);
   test.equal(mongoQ, expected);
 });
 
 Tinytest.add('queryJSON2Mongo - query two parameters', function (test) {  
   const queryJSON = {"a$gt": 5, "b$eq": 'hello'};
   const expected = {a: {$gt: 5}, b: {$eq: 'hello'}};
-  const mongoQ = queryJSON2Mongo(queryJSON);
+  const mongoQ = queryJSON2Mongo(queryJSON, mongoSchema);
   test.equal(mongoQ, expected);
 });
 
 Tinytest.add('queryJSON2Mongo - query two parameters one field', function (test) {  
   const queryJSON = {"a$gt": 5, "a$lt": 10};
   const expected = {a: {$gt: 5, $lt: 10}};
-  const mongoQ = queryJSON2Mongo(queryJSON);
+  const mongoQ = queryJSON2Mongo(queryJSON, mongoSchema);
   test.equal(mongoQ, expected);
 });
 
