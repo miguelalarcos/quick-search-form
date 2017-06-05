@@ -1,8 +1,8 @@
 import moment from 'moment';
 import Decimal from 'decimal.js';
-import flatten from 'flat';
+//import flatten from 'flat';
 
-const flatten2 = (doc, schema, sep='-') => {
+const flatten = (doc, schema, sep='-') => {
   const ret = {};
   const values = rflatten(doc, schema, '', sep);
   for(let x of values){
@@ -120,7 +120,7 @@ export const form2Object = (raw, schema) => {
 export const JSON2Object = (jsonDoc, schema) => {
   const ret = {};
   //jsonDoc = flatten(jsonDoc, {delimiter: '-'});
-  jsonDoc = flatten2(jsonDoc, schema);
+  jsonDoc = flatten(jsonDoc, schema);
   const keys = Object.keys(jsonDoc);
   
   for(let k of keys){
@@ -148,7 +148,7 @@ export const object2JSON = (obj, schema) => {
   const ret = {};
   
   //obj = flatten(obj, {delimiter: '-'});
-  obj = flatten2(obj, schema);  
+  obj = flatten(obj, schema);  
   
   const keys = Object.keys(obj);
   
@@ -175,7 +175,7 @@ export const object2JSON = (obj, schema) => {
 
 export const queryJSON2Mongo = (query, schema) => {
     //query = flatten(query, {delimiter: '-'});
-    query = flatten2(query, schema);  
+    query = flatten(query, schema);  
     ret = {};
     for(let key of Object.keys(query)){
         let seg = key.split('$');
@@ -193,8 +193,8 @@ export const queryJSON2Mongo = (query, schema) => {
 export const validate = (doc, schema) => {   
     let obj = JSON2Object(doc, schema); 
     ret = {};
-    let objf = flatten(obj, {delimiter: '-'});
-    //let objf = flatten2(obj, schema);  
+    //let objf = flatten(obj, {delimiter: '-'});
+    let objf = flatten(obj, schema);  
 
     for(let k of Object.keys(schema)){ 
         ret[k] = true;
@@ -223,7 +223,7 @@ export const validate = (doc, schema) => {
 export const JSON2form = (obj, schema) => {
   const ret = {};
   //obj = flatten(obj, {delimiter: '-'});
-  obj = flatten2(obj, schema);  
+  obj = flatten(obj, schema);  
   const keys = Object.keys(obj);
   
   for(let k of keys){
