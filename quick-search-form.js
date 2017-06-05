@@ -4,7 +4,7 @@ import moment from 'moment';
 import Decimal from 'decimal.js';
 export { qBase, queryJSON2Mongo } from './utils.js';
 import { validate, form2JSON, JSON2form } from './utils.js'; //./quick-search-form-server.js';
-import flatten from 'flat';
+//import flatten from 'flat';
 import clone from 'clone';
 
 export const integer = (i) => {i.inputmask('Regex', { 
