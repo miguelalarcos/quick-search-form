@@ -3,9 +3,9 @@ import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
 export { qBase, queryJSON2Mongo } from './utils.js';
-import { validate, form2JSON, JSON2form } from './utils.js'; //./quick-search-form-server.js';
-//import flatten from 'flat';
+import { validate, form2JSON, JSON2form } from './utils.js'; 
 import clone from 'clone';
+import { ReactiveDict } from 'meteor/reactive-dict';
 
 export const integer = (i) => {i.inputmask('Regex', { 
     regex: "^[+-]?\\d+$"
@@ -21,18 +21,52 @@ export const date = (i) => {i.datepicker({
   format: 'dd/mm/yyyy'
 })}
 
-//export const autocomplete = (i) => {Meteor.typeahead.inject();}
+const validateWithErrors = (obj, schema, errors) => {  
+  const valids = validate(obj, schema);
+
+  for(let k of Object.keys(schema)){
+    errors.set(k, '');
+  }
+
+  if(_.every(_.values(valids))){          
+    return true;
+  }else{
+    for(let k of Object.keys(valids)){
+      if(!valids[k]){
+        if(schema[k])
+          errors.set(k, schema[k].message); 
+      }
+    }
+  }  
+}
+
+const getDoc = (rd, schema) => {
+  const ret = {};
+  for(let k of Object.keys(schema)){
+    ret[k] = rd.get(k);
+  }
+  return ret;
+}
+
+const setDoc = (rd, doc, schema) => {
+  for(let k of Object.keys(schema)){
+    const v = doc[k] || '';
+    rd.set(k, v);
+  }
+}
 
 export const qForm = (template, {schema, integer, float, date, autocomplete, callback}) => {
-  Forms.mixin(template, {});
+  //Forms.mixin(template, {});
 
   template.onCreated(function(){
     let self = this;
+    self.doc = new ReactiveDict();
+    self.errors = new ReactiveDict();
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
       doc = clone(doc, false);
       doc = JSON2form(doc, schema);
-      self.form.doc(doc); 
+      setDoc(self.doc, doc, schema); 
     });
   });
 
@@ -47,30 +81,41 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   });
 
   template.events({
+    'change input'(evt, tmpl){
+      const name = evt.currentTarget.name;
+      const value = evt.currentTarget.value;
+      const oldValue = tmpl.doc.get(name);
+      if(value != oldValue){
+        tmpl.doc.set(name, value);
+        //validateWithErrors
+      }
+    },
     'click .reset'(evt, tmpl){
       let doc = tmpl.data.initial || {};
       doc = clone(doc, false);
-      tmpl.form.doc(doc);
+      setDoc(tmpl.doc, doc, shema);
     },
-    'documentSubmit': function (e, tmpl, doc) {//TODO: don't use name obj, use name doc
-        let obj = form2JSON(doc, schema);        
-        const valids = validate(obj, schema);
-
-        if(_.every(_.values(valids))){          
+    'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
+        let doc = getDoc(tmpl.doc, schema);
+        let obj = form2JSON(doc, schema);   
+        if(validateWithErrors(obj, schema, tmpl.errors)){
           obj = clone(obj, false);
           Session.set(tmpl.data.output, obj);
-          //tmpl.form.doc({});
           if(callback){
             callback(obj);
-          }
-        }else{
-          for(let k of Object.keys(valids)){
-            if(!valids[k]){
-              if(schema[k])
-                tmpl.form.errors(k, [{error: new Error(), message: schema[k].message}]);
-            }
-          }
+          }  
         }
       }
   });  
+
+  template.helpers({
+    doc(attribute){
+      const doc = Template.instance().doc;
+      return doc.get(attribute);
+    },
+    errorMessage(attribute){
+      const errors = Template.instance().errors;
+      return errors.get(attribute);
+    }
+  });
 }

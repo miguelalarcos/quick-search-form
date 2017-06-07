@@ -23,7 +23,8 @@ Package.onUse(function(api) {
   api.use('templating@1.3.2');
   api.use('tracker');
   api.use('session');
-  api.use('useful:forms@1.1.3');
+  api.use('reactive-dict');
+  //api.use('useful:forms@1.1.3');
   
   api.mainModule('quick-search-form.js', 'client');
   api.mainModule('quick-search-form-server.js', 'server');
