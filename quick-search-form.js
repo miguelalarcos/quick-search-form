@@ -65,7 +65,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     let self = this;
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
-    self.dirty = false;
+    //self.dirty = false;
 
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
@@ -108,6 +108,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : $(evt.currentTarget).val();
       const oldValue = tmpl.doc.get(name);
       if(value != oldValue){
+        tmpl.dirty = true;
         tmpl.doc.set(name, value);
         let doc = getDoc(tmpl.doc, schema);
         let obj = form2JSON(doc, schema);         
@@ -115,11 +116,15 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       }
     },
     'click .reset'(evt, tmpl){
+      Session.set(tmpl.data.input, {});
+      Session.set(tmpl.data.input, null);
+      /*
       let doc = tmpl.data.initial || {};
       doc = clone(doc, false);
       setDoc(tmpl.doc, doc, schema);
       tmpl.dirty = false;
       validateWithErrors(doc, schema, tmpl.errors);
+      */
     },
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
         let doc = getDoc(tmpl.doc, schema);
@@ -130,7 +135,9 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
           if(callback){
             callback(obj);
           }  
-          tmpl.dirty = false;
+          Session.set(tmpl.data.input, {});
+          Session.set(tmpl.data.input, null);
+          //tmpl.dirty = false;
         }
       }
   });  
