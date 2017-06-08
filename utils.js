@@ -198,7 +198,7 @@ export const validate = (doc, schema, att=null) => {
     let objf = flatten(obj, schema);  
     let ret = {};
     const keys = att ? [att] : Object.keys(schema);
-    //for(let k of Object.keys(schema)){ 
+    
     for(let k of keys){ 
         ret[k] = true;
         const t1 = typeof objf[k];
@@ -218,7 +218,7 @@ export const validate = (doc, schema, att=null) => {
 
         if(v && !v(objf[k], obj)){
             ret[k] = false;
-            continue;
+            continue; //
         }
     }
     return ret;

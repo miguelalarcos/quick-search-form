@@ -283,8 +283,16 @@ const schema = {
       fecha$eq: {type: 'date'}
 }
 
+const callback = (input, doc) => {
+  //save and findOne with the _id. Then set the doc we have found
+  let ab = new AB(doc);
+  ab.upper();
+  doc = ab.toJSON();
+  Session.set(input, doc);
+}
+
 qForm(Template.my_search, {schema, integer, date});
-qForm(Template.my_form, {schema: schema_form, integer});
+qForm(Template.my_form, {schema: schema_form, integer, callback});
 
 Template.hello.helpers({
   initial() {
@@ -300,9 +308,6 @@ Template.hello.helpers({
   },
   repr3(){
     let doc = Session.get('output3') || {};
-    let ab = new AB(doc);
-    ab.upper();
-    doc = ab.toJSON();
     return JSON.stringify(doc);
   }
 });

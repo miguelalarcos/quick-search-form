@@ -118,13 +118,6 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     'click .reset'(evt, tmpl){
       Session.set(tmpl.data.input, {});
       Session.set(tmpl.data.input, null);
-      /*
-      let doc = tmpl.data.initial || {};
-      doc = clone(doc, false);
-      setDoc(tmpl.doc, doc, schema);
-      tmpl.dirty = false;
-      validateWithErrors(doc, schema, tmpl.errors);
-      */
     },
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
         let doc = getDoc(tmpl.doc, schema);
@@ -132,12 +125,11 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
         if(validateWithErrors(obj, schema, tmpl.errors)){
           obj = clone(obj, false);
           Session.set(tmpl.data.output, obj);
-          if(callback){
-            callback(obj);
-          }  
           Session.set(tmpl.data.input, {});
           Session.set(tmpl.data.input, null);
-          //tmpl.dirty = false;
+          if(callback){
+            callback(tmpl.data.input, obj);
+          }            
         }
       }
   });  
