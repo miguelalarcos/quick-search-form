@@ -21,11 +21,15 @@ export const date = (i) => {i.datepicker({
   format: 'dd/mm/yyyy'
 })}
 
-const validateWithErrors = (obj, schema, errors) => {  
-  const valids = validate(obj, schema);
+const validateWithErrors = (obj, schema, errors, att=null) => {  
+  const valids = validate(obj, schema, att);
 
-  for(let k of Object.keys(schema)){
-    errors.set(k, '');
+  if(att){
+    errors.set(att, '');
+  }else{
+    for(let k of Object.keys(schema)){
+      errors.set(k, '');
+    }
   }
 
   if(_.every(_.values(valids))){          
@@ -56,14 +60,15 @@ const setDoc = (rd, doc, schema) => {
 }
 
 export const qForm = (template, {schema, integer, float, date, autocomplete, callback}) => {
-  //Forms.mixin(template, {});
 
   template.onCreated(function(){
     let self = this;
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
+
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
+      validateWithErrors(doc, schema, self.errors);
       doc = clone(doc, false);
       doc = JSON2form(doc, schema);
       setDoc(self.doc, doc, schema); 
@@ -78,22 +83,37 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     }
     if(date) date(this.$('.date'));
     if(autocomplete) autocomplete(this.$('.autocomplete'));
+    //const doc = getDoc(this.doc, schema);
+    
+    //for(let att of Object.keys(doc)){
+    //  this.$("input[name='" + att + "']").val(doc[att]);
+    //}    
   });
 
   template.events({
-    'change input'(evt, tmpl){
+    'keyup input'(evt, tmpl){
       const name = evt.currentTarget.name;
-      const value = evt.currentTarget.value;
+      const value = $(evt.currentTarget).val();
+      tmpl.doc.set(name, value);
+      let doc = getDoc(tmpl.doc, schema);
+      let obj = form2JSON(doc, schema);         
+      validateWithErrors(obj, schema, tmpl.errors, name);
+    },
+    'change input, change textarea, change select'(evt, tmpl){
+      const name = evt.currentTarget.name;
+      const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : $(evt.currentTarget).val();
       const oldValue = tmpl.doc.get(name);
       if(value != oldValue){
         tmpl.doc.set(name, value);
-        //validateWithErrors
+        let doc = getDoc(tmpl.doc, schema);
+        let obj = form2JSON(doc, schema);         
+        validateWithErrors(obj, schema, tmpl.errors, name);
       }
     },
     'click .reset'(evt, tmpl){
       let doc = tmpl.data.initial || {};
       doc = clone(doc, false);
-      setDoc(tmpl.doc, doc, shema);
+      setDoc(tmpl.doc, doc, schema);
     },
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
         let doc = getDoc(tmpl.doc, schema);
@@ -116,6 +136,15 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     errorMessage(attribute){
       const errors = Template.instance().errors;
       return errors.get(attribute);
+    },
+    isValid(){
+      const errors = Template.instance().errors;
+      for(let k of Object.keys(schema)){
+        if(errors.get(k) != ''){
+          return false;
+        }
+      }
+      return true;
     }
   });
 }

@@ -193,13 +193,13 @@ export const queryJSON2Mongo = (query, schema) => {
     return unflatten(ret);
 }
 
-export const validate = (doc, schema) => {   
-    let obj = JSON2Object(doc, schema); 
-    ret = {};
-    
+export const validate = (doc, schema, att=null) => {   
+    let obj = JSON2Object(doc, schema);  
     let objf = flatten(obj, schema);  
-
-    for(let k of Object.keys(schema)){ 
+    let ret = {};
+    const keys = att ? [att] : Object.keys(schema);
+    //for(let k of Object.keys(schema)){ 
+    for(let k of keys){ 
         ret[k] = true;
         const t1 = typeof objf[k];
 
