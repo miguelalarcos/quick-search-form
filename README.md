@@ -37,14 +37,15 @@ These are other inputs:
 <input type="checkbox" name="done" class="boolean" checked={{doc 'done'}}>
 ```
 
-The possible types are: string, boolean, integer, float, decimal and date. Decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
+The possible types are: string, boolean, integer, float, decimal, date and array (of strings). Decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
 
 A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. A form will output in JSON. To help the things, you can do the next:
 
 ``` javascript
 const schema_form = {
       a: {type: 'integer'},
-      b: {type: 'string'}
+      b: {type: 'string'},
+      c: {type: 'array'}
 };
 
 class AB extends qBase{
@@ -125,6 +126,7 @@ const schema_form = {
         return !isBlank(v);
       }
     },
+    c: {type: 'array'}
 };
 ```
 
@@ -231,11 +233,25 @@ Example:
             {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
         </div>
         <div class="error">{{errorMessage 'b'}}</div>
+        <!-- an example of a select with tags -->
+        {{> tags value=(doc 'c') add=(add 'c') remove=(remove 'c') }}
         {{# if isValid}}
           <a href="#" class="submit">Submit</a>
         {{/ if}}  
         <a href="#" class="reset">Reset</a>
         </form>
+  </div>  
+</template>
+
+<template name="tags">
+  <div>
+    <select>
+      <option value="volvo">Volvo</option>
+      <option value="saab">Saab</option>
+    </select>
+    {{#each value}}
+      <span class="tag">{{this}} <span value={{this}} class="delete-tag">x</span></span>
+    {{/each}}
   </div>  
 </template>
 ```
@@ -309,6 +325,16 @@ Template.hello.helpers({
   repr3(){
     let doc = Session.get('output3') || {};
     return JSON.stringify(doc);
+  }
+});
+
+Template.tags.events({
+  'change select'(evt, tmpl){
+      evt.preventDefault();
+      tmpl.data.add(evt.currentTarget.value);
+  },  
+  'click .delete-tag'(evt, tmpl){
+      tmpl.data.remove($(evt.currentTarget).attr('value'));
   }
 });
 ```

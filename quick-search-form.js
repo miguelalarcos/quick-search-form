@@ -135,6 +135,28 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   });  
 
   template.helpers({
+    add(attribute){
+      let tmpl = Template.instance();
+      return ()=>(value)=>{
+        const doc = tmpl.doc;
+        let arr = doc.get(attribute);
+        if(!_.contains(arr, value)){
+          arr.push(value);
+          doc.set(attribute, arr);
+        }
+      }
+    },
+    remove(attribute){
+      let tmpl = Template.instance();
+      return ()=>(value)=>{
+        const doc = tmpl.doc;
+        let arr = doc.get(attribute);
+        if(_.contains(arr, value)){
+          arr = _.filter(arr, (x)=>x!=value);
+          doc.set(attribute, arr);
+        }
+      }
+    },
     doc(attribute){
       const doc = Template.instance().doc;
       return doc.get(attribute);
@@ -145,6 +167,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     },
     isValid(){
       const errors = Template.instance().errors;
+
       for(let k of Object.keys(schema)){
         if(errors.get(k) != ''){
           return false;

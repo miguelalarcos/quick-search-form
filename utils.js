@@ -134,6 +134,7 @@ export const JSON2Object = (jsonDoc, schema) => {
       case 'float':
       case 'string':
       case 'boolean':
+      case 'array':
         ret[k] = jsonDoc[k];
         break; 
       case 'decimal':
@@ -163,6 +164,7 @@ export const object2JSON = (obj, schema) => {
       case 'float':
       case 'string':
       case 'boolean':
+      case 'array':
         ret[k] = obj[k];
         break; 
       case 'decimal':
@@ -206,6 +208,9 @@ export const validate = (doc, schema, att=null) => {
         if(moment.isMoment(objf[k])){  
           t1 = 'date';
         }
+        if(_.isArray(objf[k])){
+          t1 = 'array';
+        }
         let t2 = schema[k].type;
         if(t2 == 'integer' || t2 == 'float' || t2 == 'decimal'){
             t2 = 'number';
@@ -239,6 +244,7 @@ export const JSON2form = (obj, schema) => {
         ret[k] = obj[k] + '';
         break;
       case 'boolean':
+      case 'array':
         ret[k] = obj[k];
         break; 
       case 'date':
@@ -267,6 +273,7 @@ export const form2JSON = (raw, schema) => {
         break;
       case 'string':
       case 'boolean':
+      case 'array':
         ret[k] = raw[k];
         break; 
       case 'date':
