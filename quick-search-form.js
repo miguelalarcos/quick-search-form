@@ -65,13 +65,16 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     let self = this;
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
+    self.dirty = false;
 
     this.autorun(function(){
       let doc = Session.get(self.data.input) || self.data.initial || {};
+      //if(self.dirty && dirtyCallback)
       validateWithErrors(doc, schema, self.errors);
       doc = clone(doc, false);
       doc = JSON2form(doc, schema);
       setDoc(self.doc, doc, schema); 
+      self.dirty = false;
     });
   });
 
@@ -98,6 +101,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       let doc = getDoc(tmpl.doc, schema);
       let obj = form2JSON(doc, schema);         
       validateWithErrors(obj, schema, tmpl.errors, name);
+      tmpl.dirty = true;
     },
     'change input, change textarea, change select'(evt, tmpl){
       const name = evt.currentTarget.name;
@@ -114,6 +118,8 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       let doc = tmpl.data.initial || {};
       doc = clone(doc, false);
       setDoc(tmpl.doc, doc, schema);
+      tmpl.dirty = false;
+      validateWithErrors(doc, schema, tmpl.errors);
     },
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
         let doc = getDoc(tmpl.doc, schema);
@@ -124,6 +130,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
           if(callback){
             callback(obj);
           }  
+          tmpl.dirty = false;
         }
       }
   });  

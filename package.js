@@ -2,7 +2,7 @@ Package.describe({
   name: 'miguelalarcos:quick-search-form',
   version: '0.1.0',
   // Brief, one-line summary of the package.
-  summary: 'Create form-objects that you can manipulta.',
+  summary: 'Create form-objects that you can manipulate.',
   // URL to the Git repository containing the source code for this package.
   git: 'https://github.com/miguelalarcos/quick-search-form',
   // By default, Meteor will default to using README.md for documentation.
@@ -13,7 +13,6 @@ Package.describe({
 Npm.depends({
   "decimal.js": "7.2.1",
   "moment": "2.18.1",
-  //"flat": "2.0.1",
   "clone": "2.1.1"
 });
 
@@ -24,7 +23,6 @@ Package.onUse(function(api) {
   api.use('tracker');
   api.use('session');
   api.use('reactive-dict');
-  //api.use('useful:forms@1.1.3');
   
   api.mainModule('quick-search-form.js', 'client');
   api.mainModule('quick-search-form-server.js', 'server');

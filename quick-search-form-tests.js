@@ -1,5 +1,4 @@
 import { Tinytest } from "meteor/tinytest";
-//import {  } from "meteor/miguelalarcos:quick-search-form";
 import { validate, queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 import Decimal from 'decimal.js';
 import moment from 'moment';
@@ -41,7 +40,6 @@ const schemaNested = {'x.y.z': {type: 'integer'}, d: {type: 'decimal'}, f: {type
 Tinytest.add('form2JSON JSON2form - nested', function (test) {  
   const formDoc = {'x.y.z': '5'};
   const JSONDoc = form2JSON(formDoc, schemaNested);
-  console.log(JSONDoc);
   const expected = JSON2form(JSONDoc, schemaNested);  
   test.equal(formDoc, expected);
 });

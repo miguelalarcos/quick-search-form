@@ -161,7 +161,7 @@ Server side:
 
 The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object.
 
-But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.validate()`.
+But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.isValid()`.
 
 Example:
 
@@ -209,7 +209,7 @@ Example:
             <span>fecha es</span>
             <input type="text" name="fecha$eq" class="date" value={{doc 'fecha$eq'}}>
         </span>         
-        <input type="submit" name="submit" value="Search">
+        <a href="#" class="submit">Search</a>
         </form>
   </div>  
 </template>
@@ -231,7 +231,10 @@ Example:
             {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
         </div>
         <div class="error">{{errorMessage 'b'}}</div>
-        <input type="submit" name="submit" value="Form">
+        {{# if isValid}}
+          <a href="#" class="submit">Submit</a>
+        {{/ if}}  
+        <a href="#" class="reset">Reset</a>
         </form>
   </div>  
 </template>
