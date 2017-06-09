@@ -59,6 +59,34 @@ const setDoc = (rd, doc, schema) => {
   }
 }
 
+const setDocAttr = (rd, name, value, schema) => {
+    let type = schema[name].type;
+    switch(type){
+      case 'integer':
+      case 'float':
+      case 'decimal':
+        if(value == ''){
+          value = undefined;
+        }else{
+          value = +value || 0;
+        }
+        break;
+      case 'string':
+      case 'boolean':
+      case 'array':        
+        break; 
+      case 'date':
+        const m = moment(value, 'DD/MM/YYYY');
+        if(!m.isValid()){
+            value = undefined;
+        }else{
+            value = m.toDate();
+        }
+        break;  
+    }
+    rd.set(name, value);
+}
+
 export const qForm = (template, {schema, integer, float, date, autocomplete, callback}) => {
 
   template.onCreated(function(){
@@ -96,7 +124,8 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   template.events({
     'keyup input'(evt, tmpl){
       const name = evt.currentTarget.name;
-      const value = $(evt.currentTarget).val();
+      //const value = $(evt.currentTarget).val();
+      const value = evt.currentTarget.value;
       tmpl.doc.set(name, value);
       let doc = getDoc(tmpl.doc, schema);
       let obj = form2JSON(doc, schema);         
@@ -105,7 +134,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     },
     'change input, change textarea, change select'(evt, tmpl){
       const name = evt.currentTarget.name;
-      const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : $(evt.currentTarget).val();
+      const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : evt.currentTarget.value;
       const oldValue = tmpl.doc.get(name);
       if(value != oldValue){
         tmpl.dirty = true;
@@ -135,6 +164,11 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   });  
 
   template.helpers({
+    setattr(attribute){
+      return ()=>(value)=>{
+        doc.set(attribute, value);
+      }
+    },
     add(attribute){
       let tmpl = Template.instance();
       return ()=>(value)=>{
