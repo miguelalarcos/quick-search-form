@@ -59,29 +59,20 @@ const setDoc = (rd, doc, schema) => {
   }
 }
 
-const setDocAttr = (rd, name, value, schema) => {
+const setDocAttrJSON = (rd, name, value, schema) => {
     let type = schema[name].type;
     switch(type){
       case 'integer':
       case 'float':
       case 'decimal':
-        if(value == ''){
-          value = undefined;
-        }else{
-          value = +value || 0;
-        }
+        value = value + '';
         break;
-      case 'string':
       case 'boolean':
-      case 'array':        
+      case 'array':
+      case 'string':
         break; 
       case 'date':
-        const m = moment(value, 'DD/MM/YYYY');
-        if(!m.isValid()){
-            value = undefined;
-        }else{
-            value = m.toDate();
-        }
+        value = moment(value).format('DD/MM/YYYY');
         break;  
     }
     rd.set(name, value);
@@ -164,9 +155,12 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   });  
 
   template.helpers({
-    setattr(attribute){
+    setattr(name){
+      let tmpl = Template.instance();
       return ()=>(value)=>{
-        doc.set(attribute, value);
+        const doc = tmpl.doc;
+        //doc.set(name, value);
+        setDocAttrJSON(doc, name, value, schema);
       }
     },
     add(attribute){
