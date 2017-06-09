@@ -265,10 +265,10 @@ export const form2JSON = (raw, schema) => {
       case 'integer':
       case 'float':
       case 'decimal':
-        if(raw[k] == ''){
+        if(raw[k] == '' || _.isNaN(+raw[k])){
           ret[k] = undefined;
         }else{
-          ret[k] = +raw[k] || 0;
+          ret[k] = +raw[k];
         }
         break;
       case 'string':

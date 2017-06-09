@@ -159,6 +159,14 @@ template.onRendered(function(){
 
 TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
 
+If you want to create a custom template for a type (see *tags* below) you will have to use the helper *setattr*.
+
+```html
+{{>my_bool_template value=(doc 'attr') set=(setattr 'attr') }}
+```
+
+When your template wants to change the value of the *attr*, it has to call `set(value)`.
+
 Server side:
 
 The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object.
