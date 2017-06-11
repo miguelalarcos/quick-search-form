@@ -3,7 +3,7 @@ import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
 export { qBase, queryJSON2Mongo, isValid } from './utils.js';
-import { validate, form2JSON, JSON2form } from './utils.js'; 
+import { queryJSON2Mongo, isValid, validate, form2JSON, JSON2form } from './utils.js'; 
 import clone from 'clone';
 import { ReactiveDict } from 'meteor/reactive-dict';
 
@@ -78,6 +78,35 @@ const setDocAttrJSON = (rd, name, value, schema) => {
         break;  
     }
     rd.set(name, value);
+}
+
+export const qList = (template, {name, schema, collection}) => {
+  template.onCreated(function(){
+    let self = this;
+    self.autorun(function(){
+      const query = Session.get(self.data.input) || {};
+      if(isValid(query, schema)){
+        self.subscribe(name, query); 
+      }   
+    });
+  });
+
+  helpers = {};
+  helpers[name] = function(){
+    let query = Session.get(Template.instance().data.input) || {};
+    query = queryJSON2Mongo(query, schema);
+    return collection.find(query);
+  }
+
+  Template.sales.helpers(helpers);
+
+  template.events({
+    'click .edit'(evt, tmpl){
+      const _id = $(evt.target).attr('docId');
+      const doc = collection.findOne(_id);
+      Session.set(tmpl.data.output, doc);
+    }
+  });  
 }
 
 export const qForm = (template, {schema, integer, float, date, autocomplete, callback}) => {
