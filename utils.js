@@ -141,7 +141,7 @@ export const JSON2Object = (jsonDoc, schema) => {
         ret[k] = new Decimal(jsonDoc[k]);   
         break;
       case 'date':
-        ret[k] = moment(jsonDoc[k]);
+        ret[k] = jsonDoc[k] && moment(jsonDoc[k]) || moment.invalid();
         break;  
     }
   }  
@@ -227,6 +227,11 @@ export const validate = (doc, schema, att=null) => {
         }
     }
     return ret;
+}
+
+export const isValid = (doc, schema) => {
+  const valids = validate(doc, schema);    
+  return _.every(_.values(valids))
 }
 
 export const JSON2form = (obj, schema) => {

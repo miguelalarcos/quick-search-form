@@ -2,7 +2,7 @@ import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
-export { qBase, queryJSON2Mongo } from './utils.js';
+export { qBase, queryJSON2Mongo, isValid } from './utils.js';
 import { validate, form2JSON, JSON2form } from './utils.js'; 
 import clone from 'clone';
 import { ReactiveDict } from 'meteor/reactive-dict';
@@ -47,6 +47,8 @@ const validateWithErrors = (obj, schema, errors, att=null) => {
 const getDoc = (rd, schema) => {
   const ret = {};
   for(let k of Object.keys(schema)){
+    if(rd.get(k) == ''){
+    }
     ret[k] = rd.get(k);
   }
   return ret;
@@ -54,7 +56,7 @@ const getDoc = (rd, schema) => {
 
 const setDoc = (rd, doc, schema) => {
   for(let k of Object.keys(schema)){
-    const v = doc[k] || '';
+    const v = doc[k] || undefined;
     rd.set(k, v);
   }
 }
@@ -144,11 +146,13 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
         let obj = form2JSON(doc, schema);   
         if(validateWithErrors(obj, schema, tmpl.errors)){
           obj = clone(obj, false);
-          Session.set(tmpl.data.output, obj);
+          if(tmpl.data.output){
+            Session.set(tmpl.data.output, obj);
+          }
           Session.set(tmpl.data.input, {});
           Session.set(tmpl.data.input, null);
           if(callback){
-            callback(tmpl.data.input, obj);
+            callback(obj, tmpl.data.input);
           }            
         }
       }

@@ -346,3 +346,182 @@ Template.tags.events({
   }
 });
 ```
+A full example:
+
+```html
+<head>
+  <title>example-quick</title>
+</head>
+
+<body>
+  {{> main}}
+</body>
+
+<template name="main">
+  <div>
+    {{ repr }}
+  </div>
+  {{> search initial=initial output='querySearch'}}
+  {{> sales input="querySearch" output="sale"}}
+  {{> sale input="sale"}}
+</template>
+
+<template name="search">
+  <div>
+    <form class="search">
+        <span>
+            <span>Date between: </span>
+            <input type="text" name="sale_date$gte" class="date" value={{doc 'sale_date$gte'}}>
+            <span>and: </span>
+            <input type="text" name="sale_date$lte" class="date" value={{doc 'sale_date$lte'}}>
+        </span>
+        {{# if isValid}}
+          <a href="#" class="submit">Search</a>
+        {{/ if}}  
+        </form>
+  </div>  
+</template>
+
+<template name="sales">
+  <div>
+    <table>
+      {{# each sales}}
+        <tr>
+          <td>{{sale_date}}</td>
+          <td>{{amount}}</td>
+          <td docId={{_id}} class="edit">edit</td>
+        </tr>
+      {{/ each}}
+    </table>  
+  </div>
+</template>
+
+<template name="sale">
+  <div>
+    <form class="sale">
+        <table>
+        <tr>
+            <td><span>Date: </span></td>
+            <td><input type="text" name="sale_date" class="date" value={{doc 'sale_date'}}></td>
+        </tr>
+        <tr>
+          <td><div class="error">{{errorMessage 'sale_date'}}</div></td>
+        </tr>
+        <tr>
+            <td><span>Amount: </span></td>
+            <td><input type="text" name="amount" class="decimal" value={{doc 'amount'}}></td>
+        </tr>
+        <tr>
+          <td><div class="error">{{errorMessage 'amount'}}</div></td>
+        </tr>
+        {{# if isValid}}
+          <a href="#" class="submit">Save</a>
+        {{/ if}}  
+        </table>
+    </form>        
+  </div>  
+</template>
+```
+
+client side:
+```javascript
+import { Template } from 'meteor/templating';
+import { Meteor } from 'meteor/meteor';
+import { Session } from 'meteor/session';
+import { qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
+import moment from 'moment';
+import { searchSchema, Sale, saleSchema } from '/imports/model.js';
+
+import './main.html';
+
+const saveCallback = (doc, input) => {
+  Meteor.call('saveSale', doc);
+}
+
+qForm(Template.search, {schema: searchSchema, date});
+qForm(Template.sale, {schema: saleSchema, date, float, callback: saveCallback});
+
+Template.main.helpers({
+  initial() {
+    const today = moment().startOf('day').toDate();  
+    return {sale_date$gte: today, sale_date$lte: today};
+  },
+  repr(){
+    let doc = Session.get('querySearch') || {};
+    doc = queryJSON2Mongo(doc, searchSchema);
+    return JSON.stringify(doc);
+  }
+});
+
+Template.sales.onCreated(function(){
+  let self = this;
+  self.autorun(function(){
+    const query = Session.get('querySearch') || {};
+    if(isValid(query, searchSchema)){
+      self.subscribe('sales', query); 
+    }   
+  });
+});
+
+Template.sales.helpers({
+  sales(){
+    let query = Session.get('querySearch') || {};
+    query = queryJSON2Mongo(query, searchSchema);
+    return Sale.find(query);
+  }
+});
+
+Template.sales.events({
+  'click .edit'(evt, tmpl){
+    const _id = $(evt.target).attr('docId');
+    const doc = Sale.findOne(_id);
+    Session.set(tmpl.data.output, doc);
+  }
+});
+```
+
+server side:
+```javascript
+import { Meteor } from 'meteor/meteor';
+import { isValid, queryJSON2Mongo } from 'meteor/miguelalarcos:quick-search-form';
+import { searchSchema, Sale, saleSchema } from '/imports/model.js';
+
+Meteor.methods({
+  'saveSale'(doc){
+    if(!isValid(doc, saleSchema)){
+      throw new Meteor.Error("saveError", 'sale is not valid.');
+    }
+    const _id = doc._id;
+    if(!_id){
+      Sale.insert(doc);
+    }else{
+      delete doc._id;
+      Sale.update(_id, {$set: doc});
+    }
+  }
+});
+
+Meteor.publish('sales', function(query){
+  if(!isValid(query, searchSchema)){
+    this.error(Meteor.Error("salePublishError", 'query is not valid.'));
+  }
+  query = queryJSON2Mongo(query, searchSchema);
+  return Sale.find(query);
+});
+```
+
+both:
+```javascript
+export const Sale = new Mongo.Collection('sales');
+
+export const searchSchema = {
+      sale_date$gte: {type: 'date', validate: (v) => v && v.isValid()},
+      sale_date$lte: {type: 'date', validate: (v) => v && v.isValid()}
+}
+
+export const saleSchema = {
+      _id: {type: 'string'},
+      sale_date: {type: 'date', message: 'must be valid date', validate: (v) => v && v.isValid()},
+      amount: {type: 'float', message: 'must be greater than 0', validate: (v) => v > 0}
+}
+```

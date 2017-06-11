@@ -1,1 +1,1 @@
-export { validate, queryJSON2Mongo } from './utils.js';
+export { isValid, queryJSON2Mongo } from './utils.js';
