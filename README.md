@@ -428,7 +428,7 @@ client side:
 import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
-import { qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
+import { qList, qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
 import moment from 'moment';
 import { searchSchema, Sale, saleSchema } from '/imports/model.js';
 
@@ -439,6 +439,8 @@ const saveCallback = (doc, input) => {
 }
 
 qForm(Template.search, {schema: searchSchema, date});
+qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
+//name sales is the name of the publication and the helpers that returns the find
 qForm(Template.sale, {schema: saleSchema, date, float, callback: saveCallback});
 
 Template.main.helpers({
@@ -450,32 +452,6 @@ Template.main.helpers({
     let doc = Session.get('querySearch') || {};
     doc = queryJSON2Mongo(doc, searchSchema);
     return JSON.stringify(doc);
-  }
-});
-
-Template.sales.onCreated(function(){
-  let self = this;
-  self.autorun(function(){
-    const query = Session.get('querySearch') || {};
-    if(isValid(query, searchSchema)){
-      self.subscribe('sales', query); 
-    }   
-  });
-});
-
-Template.sales.helpers({
-  sales(){
-    let query = Session.get('querySearch') || {};
-    query = queryJSON2Mongo(query, searchSchema);
-    return Sale.find(query);
-  }
-});
-
-Template.sales.events({
-  'click .edit'(evt, tmpl){
-    const _id = $(evt.target).attr('docId');
-    const doc = Sale.findOne(_id);
-    Session.set(tmpl.data.output, doc);
   }
 });
 ```
