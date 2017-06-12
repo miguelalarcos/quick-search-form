@@ -109,7 +109,11 @@ export const qList = (template, {name, schema, collection}) => {
   });  
 }
 
-export const qForm = (template, {schema, integer, float, date, autocomplete, callback}) => {
+export const qForm = (template, {schema, integer, float, date, autocomplete, callback, resetAfterSubmit}) => {
+
+  if(resetAfterSubmit == undefined){
+    resetAfterSubmit = true;
+  }
 
   template.onCreated(function(){
     let self = this;
@@ -178,8 +182,10 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
           if(tmpl.data.output){
             Session.set(tmpl.data.output, obj);
           }
-          Session.set(tmpl.data.input, {});
-          Session.set(tmpl.data.input, null);
+          if(resetAfterSubmit){
+            Session.set(tmpl.data.input, {});
+            Session.set(tmpl.data.input, null);
+          }
           if(callback){
             callback(obj, tmpl.data.input);
           }            
