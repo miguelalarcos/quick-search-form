@@ -157,8 +157,6 @@ template.onRendered(function(){
 ```
  I recommend to install `eternicode:bootstrap-datepicker` and `bigdsk:inputmask`.
 
-TODO: the format of dates is 'DD/MM/YYYY'. I have to permit other formats.
-
 If you want to create a custom template for a type (see *tags* below) you will have to use the helper *setattr*.
 
 ```html
@@ -416,7 +414,8 @@ A full example:
         </tr>
         {{# if isValid}}
           <a href="#" class="submit">Save</a>
-        {{/ if}}  
+        {{/ if}}
+        <a href="#" class="reset">Reset</a>  
         </table>
     </form>        
   </div>  
@@ -428,20 +427,27 @@ client side:
 import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
-import { qList, qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
+import { setDateFormat, qList, qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
 import moment from 'moment';
 import { searchSchema, Sale, saleSchema } from '/imports/model.js';
 
 import './main.html';
 
+setDateFormat('DD/MM/YYYY');
+
 const saveCallback = (doc, input) => {
   Meteor.call('saveSale', doc);
 }
 
-qForm(Template.search, {schema: searchSchema, date});
-qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
+const dateOptions = {
+    format: "dd/mm/yyyy",
+    autoclose: true
+};
+
+qForm(Template.search, {schema: searchSchema, date: date(dateOptions), resetAfterSubmit: false});
+qForm(Template.sale, {schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
 //name sales is the name of the publication and the helpers that returns the find
-qForm(Template.sale, {schema: saleSchema, date, float, callback: saveCallback});
+qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
 
 Template.main.helpers({
   initial() {

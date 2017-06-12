@@ -2,8 +2,8 @@ import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
-export { qBase, queryJSON2Mongo, isValid } from './utils.js';
-import { queryJSON2Mongo, isValid, validate, form2JSON, JSON2form } from './utils.js'; 
+export { setDateFormat, qBase, queryJSON2Mongo, isValid } from './utils.js';
+import { getDateFormat, queryJSON2Mongo, isValid, validate, form2JSON, JSON2form } from './utils.js'; 
 import clone from 'clone';
 import { ReactiveDict } from 'meteor/reactive-dict';
 
@@ -17,9 +17,7 @@ export const float = (i) => {i.inputmask('Regex', {
     });
 }
 
-export const date = (i) => {i.datepicker({
-  format: 'dd/mm/yyyy'
-})}
+export const date = (options) => (i) => {i.datepicker(options)}
 
 const validateWithErrors = (obj, schema, errors, att=null) => {  
   const valids = validate(obj, schema, att);
@@ -74,7 +72,7 @@ const setDocAttrJSON = (rd, name, value, schema) => {
       case 'string':
         break; 
       case 'date':
-        value = moment(value).format('DD/MM/YYYY');
+        value = moment(value).format(getDateFormat());
         break;  
     }
     rd.set(name, value);

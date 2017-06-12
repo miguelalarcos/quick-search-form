@@ -1,6 +1,12 @@
 import moment from 'moment';
 import Decimal from 'decimal.js';
 
+let dateFormat = 'DD/MM/YYYY';
+
+export const setDateFormat = (str) => {dateFormat=str}
+
+export const getDateFormat = ()=>{dateFormat}
+
 const _sep = '.';
 
 const flatten = (doc, schema, sep=_sep) => {
@@ -253,7 +259,7 @@ export const JSON2form = (obj, schema) => {
         ret[k] = obj[k];
         break; 
       case 'date':
-        ret[k] = moment(obj[k]).format('DD/MM/YYYY');
+        ret[k] = moment(obj[k]).format(dateFormat);
         break;  
     }
   }  
@@ -282,7 +288,7 @@ export const form2JSON = (raw, schema) => {
         ret[k] = raw[k];
         break; 
       case 'date':
-        const m = moment(raw[k], 'DD/MM/YYYY');
+        const m = moment(raw[k], dateFormat);
         if(!m.isValid()){
             ret[k] = undefined;
         }else{
