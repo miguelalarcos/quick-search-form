@@ -436,7 +436,14 @@ import './main.html';
 setDateFormat('DD/MM/YYYY');
 
 const saveCallback = (doc, input) => {
-  Meteor.call('saveSale', doc);
+  Meteor.call('saveSale', doc, (err, result)=>{
+    if(err){
+      console.log(err);
+    }
+    else{
+      Session.set(input, result);
+    }
+  });
 }
 
 const dateOptions = {
@@ -474,12 +481,15 @@ Meteor.methods({
       throw new Meteor.Error("saveError", 'sale is not valid.');
     }
     const _id = doc._id;
+    doc.amount += 100;
     if(!_id){
-      Sale.insert(doc);
+      doc._id = Sale.insert(doc);
     }else{
       delete doc._id;
       Sale.update(_id, {$set: doc});
+      doc._id = _id;
     }
+    return doc;
   }
 });
 
