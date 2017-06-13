@@ -1,0 +1,18 @@
+<template name="searchInMaster">
+  <div>
+    <div class="input-group">
+      <input disabled type="text" class="string form-control" name="client" value={{value}}>
+      <a href="#" class="toggle input-group-addon">...</a>
+    </div>
+    {{#if visible}}
+      <div>
+        <input type="text" class="query form-control">
+        {{#each items}}
+          <div>
+            <a href="#" data={{value}} class="set">{{value}}</a>
+          </div>
+        {{/each}}  
+      </div>
+    {{/if}}
+  </div>
+</template>

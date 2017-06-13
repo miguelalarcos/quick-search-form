@@ -4,6 +4,8 @@ import moment from 'moment';
 import Decimal from 'decimal.js';
 export { setDateFormat, qBase, queryJSON2Mongo, isValid } from './utils.js';
 import { getDateFormat, queryJSON2Mongo, isValid, validate, form2JSON, JSON2form } from './utils.js'; 
+import './widgets/searchInMaster.js';
+import './widgets/tags.js';
 import clone from 'clone';
 import { ReactiveDict } from 'meteor/reactive-dict';
 

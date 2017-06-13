@@ -362,6 +362,9 @@ A full example:
   {{> search initial=initial output='querySearch'}}
   {{> sales input="querySearch" output="sale"}}
   {{> sale input="sale"}}
+  <div>Lines and create line:</div>
+  {{> lines input="sale"}}
+  {{> line input="line"}}
 </template>
 
 <template name="search">
@@ -441,6 +444,25 @@ A full example:
     {{/if}}
   </div>
 </template>
+
+<template name="lines">
+  <div>
+    {{#each lines}}
+      <div>
+        {{item}}, {{quantity}}, {{amount}}
+      </div>
+    {{/each}}
+  </div>
+</template>
+
+<template name="line">
+  <div>
+    Item: <input type="text" class="string" name="item" value={{doc 'item'}}>
+    Quantity: <input type="text" class="integer" name="quantity" value={{doc 'quantity'}}>
+    Amount: <input type="text" class="float" name="amount" value={{doc 'amount'}}>
+    <a href="#" class='submit'>Save</a>
+  </div>
+</template>
 ```
 
 client side:
@@ -450,8 +472,7 @@ import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 import { setDateFormat, qList, qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
 import moment from 'moment';
-import { searchSchema, Sale, saleSchema } from '/imports/model.js';
-
+import { searchSchema, Sale, saleSchema, lineSchema } from '/imports/model.js';
 import './main.html';
 
 setDateFormat('DD/MM/YYYY');
@@ -474,7 +495,6 @@ const dateOptions = {
 
 qForm(Template.search, {schema: searchSchema, date: date(dateOptions), resetAfterSubmit: false});
 qForm(Template.sale, {schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
-//name sales is the name of the publication and the helpers that returns the find
 qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
 
 Template.main.helpers({
@@ -486,52 +506,42 @@ Template.main.helpers({
     let doc = Session.get('querySearch') || {};
     doc = queryJSON2Mongo(doc, searchSchema);
     return JSON.stringify(doc);
+  },
+  lineVisible(){
+    return Session.get('line');
   }
 });
 
-Template.searchInMaster.onCreated(function(){
-  this.toggle = new ReactiveVar(false);
-  this.items = new Mongo.Collection(null);
+Tracker.autorun(()=>{
+  let sale = Session.get('sale');
+  if(sale){
+    const ret = {_id: sale._id};
+    Session.set('line', ret);
+  }
 });
 
-Template.searchInMaster.events({
-  'click .toggle'(evt, tmpl){
-    tmpl.items.remove({});
-    tmpl.toggle.set(!tmpl.toggle.get());
-    if(tmpl.toggle.get()){
-      Meteor.setTimeout(function() {
-        tmpl.$('.query').focus();  
-      }, 0);      
-    }
-  },
-  'keyup .query'(evt, tmpl){
-    tmpl.items.remove({});
-    let query = evt.currentTarget.value;
-    Meteor.call(tmpl.data.method, query, (err, result)=>{
-      if(err){
-        console.log(err);
+const lineSave = (doc, input) => {
+  Meteor.call('lineSave', doc)
+  Session.set(input, {_id: doc._id});
+}
+
+qForm(Template.line, {schema: lineSchema, callback: lineSave});
+
+Template.lines.helpers({
+  lines(){
+    let sale = Session.get(Template.instance().data.input);
+    if(sale){
+      sale = Sale.findOne(sale._id);
+      if(sale){
+        return sale.lines;
       }
       else{
-        for(let r of result){
-          tmpl.items.insert({value: r.value});
-        }
+        return [];
       }
-    })
-
-  },
-  'click .set'(evt, tmpl){  
-    tmpl.data.set(tmpl.$(evt.target).attr('data'));
-    tmpl.items.remove({});
-    tmpl.toggle.set(false);
-  }
-});
-
-Template.searchInMaster.helpers({
-  visible(){
-    return Template.instance().toggle.get();
-  },
-  items(){
-    return Template.instance().items.find({});
+    }
+    else{
+      return [];
+    }
   }
 });
 ```
@@ -554,6 +564,11 @@ Meteor.methods({
   'queryClients'(query){
     let ret = Client.find({value: { $regex: query, $options: 'i'}}).fetch();
     return ret;
+  },
+  lineSave(doc){
+    const _id = doc._id;
+    delete doc._id;
+    Sale.update(_id, {$push: {lines: doc}});
   },  
   'saveSale'(doc){
     if(!isValid(doc, saleSchema)){
@@ -594,6 +609,14 @@ export const saleSchema = {
       _id: {type: 'string'},
       sale_date: {type: 'date', message: 'must be valid date', validate: (v) => v && v.isValid()},
       amount: {type: 'float', message: 'must be greater than 0', validate: (v) => v > 0},
-      client: {type: 'string'}
+      client: {type: 'string'},
+      lines: {type: 'array'}
+}
+
+export const lineSchema = {
+      _id: {type: 'string'},
+      item: {type: 'string'},
+      quantity: {type: 'integer'},
+      amount: {type: 'float'}
 }
 ```

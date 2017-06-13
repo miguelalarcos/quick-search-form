@@ -1,0 +1,12 @@
+<template name="tags">
+  <div>
+    <select>
+      {{#each items}}  
+        <option value={{this}}>{{this}}</option>
+      {{/each}}  
+    </select>
+    {{#each value}}
+      <span class="tag">{{this}} <span value={{this}} class="delete-tag">x</span></span>
+    {{/each}}
+  </div>  
+</template>
