@@ -498,6 +498,11 @@ Template.searchInMaster.events({
   'click .toggle'(evt, tmpl){
     tmpl.items.remove({});
     tmpl.toggle.set(!tmpl.toggle.get());
+    if(tmpl.toggle.get()){
+      Meteor.setTimeout(function() {
+        tmpl.$('.query').focus();  
+      }, 0);      
+    }
   },
   'keyup .query'(evt, tmpl){
     tmpl.items.remove({});
