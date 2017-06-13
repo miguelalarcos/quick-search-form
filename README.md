@@ -412,6 +412,10 @@ A full example:
         <tr>
           <td><div class="error">{{errorMessage 'amount'}}</div></td>
         </tr>
+        <tr>
+          <td><span>Client: </span></td>
+          <td>{{> searchInMaster method='queryClients' set=(setattr 'client') value=(doc 'client') }}</td>
+        </tr>
         {{# if isValid}}
           <a href="#" class="submit">Save</a>
         {{/ if}}
@@ -419,6 +423,23 @@ A full example:
         </table>
     </form>        
   </div>  
+</template>
+
+<template name="searchInMaster">
+  <div>
+    <input type="text" class="string" name="client" value={{value}}>
+    <a href="#" class="toggle">toggle</a>
+    {{#if visible}}
+      <div>
+        <input type="text" class="query">
+        {{#each items}}
+          <div>
+            <span>{{value}}</span><a href="#" data={{value}} class="set">set</a>
+          </div>
+        {{/each}}  
+      </div>
+    {{/if}}
+  </div>
 </template>
 ```
 
@@ -467,6 +488,47 @@ Template.main.helpers({
     return JSON.stringify(doc);
   }
 });
+
+Template.searchInMaster.onCreated(function(){
+  this.toggle = new ReactiveVar(false);
+  this.items = new Mongo.Collection(null);
+});
+
+Template.searchInMaster.events({
+  'click .toggle'(evt, tmpl){
+    tmpl.items.remove({});
+    tmpl.toggle.set(!tmpl.toggle.get());
+  },
+  'keyup .query'(evt, tmpl){
+    tmpl.items.remove({});
+    let query = evt.currentTarget.value;
+    Meteor.call(tmpl.data.method, query, (err, result)=>{
+      if(err){
+        console.log(err);
+      }
+      else{
+        for(let r of result){
+          tmpl.items.insert({value: r.value});
+        }
+      }
+    })
+
+  },
+  'click .set'(evt, tmpl){  
+    tmpl.data.set(tmpl.$(evt.target).attr('data'));
+    tmpl.items.remove({});
+    tmpl.toggle.set(false);
+  }
+});
+
+Template.searchInMaster.helpers({
+  visible(){
+    return Template.instance().toggle.get();
+  },
+  items(){
+    return Template.instance().items.find({});
+  }
+});
 ```
 
 server side:
@@ -475,7 +537,19 @@ import { Meteor } from 'meteor/meteor';
 import { isValid, queryJSON2Mongo } from 'meteor/miguelalarcos:quick-search-form';
 import { searchSchema, Sale, saleSchema } from '/imports/model.js';
 
+const Client = new Mongo.Collection('clients');
+
+if(Client.find({}).count() == 0){
+  Client.insert({value: 'Miguel'});
+  Client.insert({value: 'Miguelito'});
+  Client.insert({value: 'Miguelon'});
+}
+
 Meteor.methods({
+  'queryClients'(query){
+    let ret = Client.find({value: { $regex: query, $options: 'i'}}).fetch();
+    return ret;
+  },  
   'saveSale'(doc){
     if(!isValid(doc, saleSchema)){
       throw new Meteor.Error("saveError", 'sale is not valid.');
@@ -514,6 +588,7 @@ export const searchSchema = {
 export const saleSchema = {
       _id: {type: 'string'},
       sale_date: {type: 'date', message: 'must be valid date', validate: (v) => v && v.isValid()},
-      amount: {type: 'float', message: 'must be greater than 0', validate: (v) => v > 0}
+      amount: {type: 'float', message: 'must be greater than 0', validate: (v) => v > 0},
+      client: {type: 'string'}
 }
 ```
