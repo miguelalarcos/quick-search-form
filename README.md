@@ -364,6 +364,7 @@ A full example:
   {{> sale input="sale"}}
   <div>Lines and create line:</div>
   {{> lines input="sale"}}
+  <!-- there's an autorun to go from sale to line -->
   {{> line input="line"}}
 </template>
 
@@ -426,23 +427,6 @@ A full example:
         </table>
     </form>        
   </div>  
-</template>
-
-<template name="searchInMaster">
-  <div>
-    <input type="text" class="string" name="client" value={{value}}>
-    <a href="#" class="toggle">toggle</a>
-    {{#if visible}}
-      <div>
-        <input type="text" class="query">
-        {{#each items}}
-          <div>
-            <span>{{value}}</span><a href="#" data={{value}} class="set">set</a>
-          </div>
-        {{/each}}  
-      </div>
-    {{/if}}
-  </div>
 </template>
 
 <template name="lines">
@@ -515,13 +499,15 @@ Template.main.helpers({
 Tracker.autorun(()=>{
   let sale = Session.get('sale');
   if(sale){
+    // this is important, because the line form must have the _id of the sale
     const ret = {_id: sale._id};
     Session.set('line', ret);
   }
 });
 
 const lineSave = (doc, input) => {
-  Meteor.call('lineSave', doc)
+  Meteor.call('lineSave', doc);
+  // this is important, because the line form must have the _id of the sale
   Session.set(input, {_id: doc._id});
 }
 
@@ -535,15 +521,9 @@ Template.lines.events({
 
 Template.lines.helpers({
   lines(){
-    let sale = Session.get(Template.instance().data.input);
+    let sale = Session.get(Template.instance().data.input) && Sale.findOne(sale._id);
     if(sale){
-      sale = Sale.findOne(sale._id);
-      if(sale){
-        return sale.lines;
-      }
-      else{
-        return [];
-      }
+      return sale.lines;      
     }
     else{
       return [];
@@ -629,3 +609,7 @@ export const lineSchema = {
       amount: {type: 'float'}
 }
 ```
+
+There are two widgets include with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple.
+
+In the last example above you can see a form to push to an array of an object.
