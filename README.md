@@ -21,6 +21,8 @@ an object like `{initDate$gte: date1, endDate$lte: date2}` and puts to Session q
 <!-- other way is to use the callback function explained later-->
 ```
 
+I call this "component pipeline". See the last example of this document to have an idea on how it works.
+
 Let's see an input example:
 
 ```html
@@ -391,7 +393,7 @@ A full example:
         <tr>
           <td>{{sale_date}}</td>
           <td>{{amount}}</td>
-          <td docId={{_id}} class="edit">edit</td>
+          <td class="edit">edit</td>
         </tr>
       {{/ each}}
     </table>  
@@ -462,6 +464,7 @@ import './main.html';
 setDateFormat('DD/MM/YYYY');
 
 const saveCallback = (doc, input) => {
+  delete doc.lines;
   Meteor.call('saveSale', doc, (err, result)=>{
     if(err){
       console.log(err);
@@ -478,8 +481,8 @@ const dateOptions = {
 };
 
 qForm(Template.search, {schema: searchSchema, date: date(dateOptions), resetAfterSubmit: false});
-qForm(Template.sale, {schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
 qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
+qForm(Template.sale, {schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
 
 Template.main.helpers({
   initial() {
@@ -496,8 +499,6 @@ Template.main.helpers({
   }
 });
 
-qConnect('sale', 'line', (v)=>{ return {_id: v._id} });
-
 const lineSave = (doc, input) => {
   Meteor.call('lineSave', doc);
   // this is important, because the line form must have the _id of the sale
@@ -505,6 +506,8 @@ const lineSave = (doc, input) => {
 }
 
 qForm(Template.line, {schema: lineSchema, callback: lineSave});
+// this updates session line each time session sale changes
+qConnect('sale', 'line', (v)=>{ return {_id: v._id} });
 
 Template.lines.events({
   'click .remove'(evt, tmpl){
@@ -514,13 +517,14 @@ Template.lines.events({
 
 Template.lines.helpers({
   lines(){
-    let sale = Session.get(Template.instance().data.input) && Sale.findOne(sale._id);
+    let sale = Session.get(Template.instance().data.input);
     if(sale){
-      return sale.lines;      
+      sale = Sale.findOne(sale._id);
+      if(sale){
+        return sale.lines;
+      }
     }
-    else{
-      return [];
-    }
+    return [];
   }
 });
 ```
@@ -606,3 +610,22 @@ export const lineSchema = {
 There are two widgets include with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple.
 
 In the last example above you can see a form to push to an array of an object.
+
+# API
+
+* qForm
+```javascript
+(template, {schema, integer, float, date, autocomplete, callback, resetAfterSubmit}) => {...}
+```
+Enhances *template*. Take a look to `<template name="sale">` for example.
+* qList
+```javascript
+(template, {name, schema, collection}) => {...}
+```
+Enhances *template*. Take a look to `<template name="sales">`.
+*name* is the name of the publication source and the name of the helpers that gives the data to the template.
+* qConnect
+```javascript
+(input, output, t) => {...}
+```
+When Session *input* changes, Session *output* is updated with the value returned by *t*. The argument passed to *t* is Session.get(input).

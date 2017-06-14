@@ -116,8 +116,8 @@ export const qList = (template, {name, schema, collection}) => {
 
   template.events({
     'click .edit'(evt, tmpl){
-      const _id = $(evt.target).attr('docId');
-      const doc = collection.findOne(_id);
+      //const _id = $(evt.target).attr('docId');
+      const doc = this; //collection.findOne(_id);
       Session.set(tmpl.data.output, doc);
     }
   });  
