@@ -80,6 +80,20 @@ const setDocAttrJSON = (rd, name, value, schema) => {
     rd.set(name, value);
 }
 
+
+export const qConnect = (input, output, t) => {
+  Tracker.autorun(()=>{
+    let x = Session.get(input);
+    if(x){
+      const v = t(x)
+      Session.set(output, v);
+    }
+    else{
+      Session.set(output, null);
+    }
+  });
+}
+
 export const qList = (template, {name, schema, collection}) => {
   template.onCreated(function(){
     let self = this;

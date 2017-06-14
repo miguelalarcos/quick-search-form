@@ -454,7 +454,7 @@ client side:
 import { Template } from 'meteor/templating';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
-import { setDateFormat, qList, qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
+import { setDateFormat, qConnect, qList, qForm, integer, float, date, qBase, queryJSON2Mongo, isValid } from 'meteor/miguelalarcos:quick-search-form';
 import moment from 'moment';
 import { searchSchema, Sale, saleSchema, lineSchema } from '/imports/model.js';
 import './main.html';
@@ -492,18 +492,11 @@ Template.main.helpers({
     return JSON.stringify(doc);
   },
   lineVisible(){
-    return Session.get('line');
+    return Session.get('sale');
   }
 });
 
-Tracker.autorun(()=>{
-  let sale = Session.get('sale');
-  if(sale){
-    // this is important, because the line form must have the _id of the sale
-    const ret = {_id: sale._id};
-    Session.set('line', ret);
-  }
-});
+qConnect('sale', 'line', (v)=>{ return {_id: v._id} });
 
 const lineSave = (doc, input) => {
   Meteor.call('lineSave', doc);
