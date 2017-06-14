@@ -449,7 +449,7 @@ A full example:
   <div>
     {{#each lines}}
       <div>
-        {{item}}, {{quantity}}, {{amount}}
+        {{item}}, {{quantity}}, {{amount}}, <a href="#" class="remove">remove</a>
       </div>
     {{/each}}
   </div>
@@ -527,6 +527,12 @@ const lineSave = (doc, input) => {
 
 qForm(Template.line, {schema: lineSchema, callback: lineSave});
 
+Template.lines.events({
+  'click .remove'(evt, tmpl){
+    Meteor.call('lineRemove', Session.get('sale')._id, this);
+  }
+});
+
 Template.lines.helpers({
   lines(){
     let sale = Session.get(Template.instance().data.input);
@@ -564,6 +570,9 @@ Meteor.methods({
   'queryClients'(query){
     let ret = Client.find({value: { $regex: query, $options: 'i'}}).fetch();
     return ret;
+  },
+  lineRemove(_id, doc){
+    Sale.update(_id, {$pull: {lines: doc}});
   },
   lineSave(doc){
     const _id = doc._id;
