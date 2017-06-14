@@ -171,7 +171,7 @@ The *validate* function takes a JSON and a schema, and returns a dictionary wher
 
 But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.isValid()`.
 
-Example:
+In the next example you can see a form to push and remove to an array of an object.
 
 ```html
 <head>
@@ -424,9 +424,11 @@ export const lineSchema = {
 }
 ```
 
-There are two widgets included with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple.
+There are two widgets included with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple. It's associated to an array type:
 
-In the last example above you can see a form to push to an array of an object.
+```html
+{{> tags value=(doc 'products') add=(add 'products') remove=(remove 'products') }}
+```
 
 # API
 
