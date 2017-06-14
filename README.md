@@ -94,13 +94,13 @@ const schema = {
       a$lt: {type: 'integer'},
       a$gt: {type: 'integer'},
       b$eq: {type: 'boolean'},
-      'x.y$eq': {type: 'string'},
+      'x.y$eq': {type: 'string'}, // flatten way
       fecha$eq: {type: 'date'}
 }
 
 Template.hello.helpers({
   initial() {
-    return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}};
+    return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}}; // unflatten way
   },
   ...
 ```
@@ -167,9 +167,7 @@ If you want to create a custom template for a type (see *tags* below) you will h
 
 When your template wants to change the value of the *attr*, it has to call `set(value)`.
 
-Server side:
-
-The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object.
+The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object. There's an `isValid` function that return *true* or *false*.
 
 But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.isValid()`.
 
@@ -181,186 +179,10 @@ Example:
 </head>
 
 <body>
-  <h1>qForm</h1>
-  {{> hello}}
-</body>
-
-<template name="hello">
-  <div>
-    {{ repr2 }}
-  </div>
-  {{> my_search initial=initial output='output2'}}
-  <div>
-    {{ repr3 }}
-  </div>
-  {{> my_form input='input1' initial=initial_form output='output3' }}
-</template>
-
-<template name="my_search">
-  <div>
-    <form class="search">
-        <span>
-            <span>a less than</span>
-            <input type="text" name="a$lt" class="integer" value={{doc 'a$lt'}}>
-        </span>
-        <span>
-            <span>a greater than</span>
-            <input type="text" name="a$gt" class="integer" value={{doc 'a$gt'}}>
-        </span>
-        <span>
-            <span>b is</span>
-            <input type="checkbox" name="b$eq" class="boolean" checked={{doc 'b$eq'}}>
-        </span>
-        <span>
-            <span>nested is</span>
-            <input type="text" name="x.y$eq" class="text" value={{doc 'x.y$eq'}}>
-        </span>       
-        <span>
-            <span>fecha es</span>
-            <input type="text" name="fecha$eq" class="date" value={{doc 'fecha$eq'}}>
-        </span>         
-        <a href="#" class="submit">Search</a>
-        </form>
-  </div>  
-</template>
-
-<template name="my_form">
-  <div>
-    <form class="form">
-        <div>
-            <span>a:</span>
-            <input type="text" name="a" class="integer" value={{doc 'a'}}>
-        </div>
-        <div class="error">{{errorMessage 'a'}}</div>
-        <div>
-            <span>b:</span>
-            <!--<input type="text" name="b" class="string" value={{doc 'b'}}> -->
-
-            <!-- to use the next template you must add mizzao:autocomplete 
-            It doesn't work right now because its input doesn't trigger change event when the text of the input changes when clicking in an item of the popover. You can build your own autocomplete with the only requisite that the input triggers the change event whenever it changes its value. -->
-            {{> inputAutocomplete autocomplete="off" name="b" settings=settings value=(doc 'b') class="input-xlarge" }}
-        </div>
-        <div class="error">{{errorMessage 'b'}}</div>
-        <!-- an example of a select with tags -->
-        {{> tags value=(doc 'c') add=(add 'c') remove=(remove 'c') }}
-        {{# if isValid}}
-          <a href="#" class="submit">Submit</a>
-        {{/ if}}  
-        <a href="#" class="reset">Reset</a>
-        </form>
-  </div>  
-</template>
-
-<template name="tags">
-  <div>
-    <select>
-      <option value="volvo">Volvo</option>
-      <option value="saab">Saab</option>
-    </select>
-    {{#each value}}
-      <span class="tag">{{this}} <span value={{this}} class="delete-tag">x</span></span>
-    {{/each}}
-  </div>  
-</template>
-```
-
-```javascript
-import { Template } from 'meteor/templating';
-import { Session } from 'meteor/session';
-import { qForm, integer, float, date, qBase, queryJSON2Mongo } from 'meteor/miguelalarcos:quick-search-form';
-
-import './main.html';
-
-const isBlank = (x)=>{return x == undefined || x == null || x == ''}
-
-const schema_form = {
-      a: {type: 'integer', message: 'a must be greater than 5', validate: (v, doc) => {
-        if(!isBlank(v)){
-          return v > 5;
-        }
-        return true;
-      }
-    },
-      b: {type: 'string', message: 'b is mandatory', validate: (v, doc) => {
-        return !isBlank(v);
-      }
-    }
-};
-
-class AB extends qBase{
-  constructor(doc){
-    super(doc, AB.schema);
-  }
-  upper(){
-    if(this.b)
-      this.b = this.b.toUpperCase();
-  }
-}
-
-AB.schema = schema_form;
-
-const schema = {
-      a$lt: {type: 'integer'},
-      a$gt: {type: 'integer'},
-      b$eq: {type: 'boolean'},
-      'x.y$eq': {type: 'string'},
-      fecha$eq: {type: 'date'}
-}
-
-const callback = (input, doc) => {
-  //save and findOne with the _id. Then set the doc we have found
-  let ab = new AB(doc);
-  ab.upper();
-  doc = ab.toJSON();
-  Session.set(input, doc);
-}
-
-qForm(Template.my_search, {schema, integer, date});
-qForm(Template.my_form, {schema: schema_form, integer, callback});
-
-Template.hello.helpers({
-  initial() {
-    return {a$lt: 5, b$eq: true, x: {y$eq: 'hola :)'}};
-  },
-  repr2(){
-    let doc = Session.get('output2') || {};
-    doc = queryJSON2Mongo(doc, schema);
-    return JSON.stringify(doc);
-  },
-  initial_form() {
-    return (new AB({a: 5, b: 'Murcia'})).toJSON();
-  },
-  repr3(){
-    let doc = Session.get('output3') || {};
-    return JSON.stringify(doc);
-  }
-});
-
-Template.tags.events({
-  'change select'(evt, tmpl){
-      evt.preventDefault();
-      tmpl.data.add(evt.currentTarget.value);
-  },  
-  'click .delete-tag'(evt, tmpl){
-      tmpl.data.remove($(evt.currentTarget).attr('value'));
-  }
-});
-```
-A full example:
-
-```html
-<head>
-  <title>example-quick</title>
-</head>
-
-<body>
   {{> main}}
 </body>
 
 <template name="main">
-  <div>
-    {{ repr }}
-  </div>
   {{> search initial=initial output='querySearch'}}
   {{> sales input="querySearch" output="sale"}}
   {{> sale input="sale"}}
@@ -489,11 +311,6 @@ Template.main.helpers({
     const today = moment().startOf('day').toDate();  
     return {sale_date$gte: today, sale_date$lte: today};
   },
-  repr(){
-    let doc = Session.get('querySearch') || {};
-    doc = queryJSON2Mongo(doc, searchSchema);
-    return JSON.stringify(doc);
-  },
   lineVisible(){
     return Session.get('sale');
   }
@@ -544,7 +361,7 @@ if(Client.find({}).count() == 0){
 }
 
 Meteor.methods({
-  'queryClients'(query){
+  queryClients(query){
     let ret = Client.find({value: { $regex: query, $options: 'i'}}).fetch();
     return ret;
   },
@@ -556,7 +373,7 @@ Meteor.methods({
     delete doc._id;
     Sale.update(_id, {$push: {lines: doc}});
   },  
-  'saveSale'(doc){
+  saveSale(doc){
     if(!isValid(doc, saleSchema)){
       throw new Meteor.Error("saveError", 'sale is not valid.');
     }
@@ -607,7 +424,7 @@ export const lineSchema = {
 }
 ```
 
-There are two widgets include with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple.
+There are two widgets included with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple.
 
 In the last example above you can see a form to push to an array of an object.
 
@@ -617,15 +434,17 @@ In the last example above you can see a form to push to an array of an object.
 ```javascript
 (template, {schema, integer, float, date, autocomplete, callback, resetAfterSubmit}) => {...}
 ```
-Enhances *template*. Take a look to `<template name="sale">` for example.
+Enhances *template*. Take a look at `<template name="sale">` for example.
 * qList
 ```javascript
 (template, {name, schema, collection}) => {...}
 ```
-Enhances *template*. Take a look to `<template name="sales">`.
+Enhances *template*. Take a look at `<template name="sales">`.
 *name* is the name of the publication source and the name of the helpers that gives the data to the template.
 * qConnect
 ```javascript
 (input, output, t) => {...}
 ```
 When Session *input* changes, Session *output* is updated with the value returned by *t*. The argument passed to *t* is Session.get(input).
+* qBase
+You inherit from this base class if you have plans of heavy manipulate the doc.
