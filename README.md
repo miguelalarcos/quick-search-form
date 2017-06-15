@@ -1,5 +1,7 @@
 # quick-search-form
 
+[![Join the chat at https://gitter.im/quick-search-form/Lobby](https://badges.gitter.im/quick-search-form/Lobby.svg)](https://gitter.im/quick-search-form/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Create form-objects that you can manipulate.
 
 # Description
