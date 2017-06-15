@@ -216,6 +216,15 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
         setDocAttrJSON(doc, name, value, schema);
       }
     },
+    setDoc(path){
+      let tmpl = Template.instance();
+      return ()=>(subdoc)=>{
+        const doc = tmpl.doc;
+        for(let k of Object.keys(subdoc)){
+          setDocAttrJSON(doc, path+'.'+k, subdoc[k], schema);
+        }
+      }
+    },
     add(attribute){
       let tmpl = Template.instance();
       return ()=>(value)=>{

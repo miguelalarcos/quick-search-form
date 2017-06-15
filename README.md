@@ -242,7 +242,7 @@ In the next example you can see a form to push and remove to an array of an obje
         </tr>
         <tr>
           <td><span>Client: </span></td>
-          <td>{{> searchInMaster method='queryClients' set=(setattr 'client') value=(doc 'client') }}</td>
+          <td>{{> searchInMaster method='queryClients' set=(setDoc 'client') value=(doc 'client.value') }}</td>
         </tr>
         {{# if isValid}}
           <a href="#" class="submit">Save</a>
@@ -412,7 +412,8 @@ export const saleSchema = {
       _id: {type: 'string'},
       sale_date: {type: 'date', message: 'must be valid date', validate: (v) => v && v.isValid()},
       amount: {type: 'float', message: 'must be greater than 0', validate: (v) => v > 0},
-      client: {type: 'string'},
+      'client.value': {type: 'string'},
+      'client._id': {type: 'string'},
       lines: {type: 'array'}
 }
 
@@ -424,7 +425,15 @@ export const lineSchema = {
 }
 ```
 
-There are two widgets included with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing. Tags is like a select type multiple. It's associated to an array type:
+There are two widgets included with the package: *searchInMaster* and *tags*. The first one is similar to an autocomplete because there's a search in a master collection while you are typing.
+
+```html
+{{> searchInMaster method='queryClients' set=(setDoc 'client') value=(doc 'client.value') }}
+```
+This means that we'll set the doc retrieved by the call to *method* in the path *client*.
+
+
+Tags is like a select type multiple. It's associated to an array type:
 
 ```html
 {{> tags value=(doc 'products') add=(add 'products') remove=(remove 'products') }}

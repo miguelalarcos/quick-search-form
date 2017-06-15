@@ -25,14 +25,15 @@ Template.searchInMaster.events({
       }
       else{
         for(let r of result){
-          tmpl.items.insert({value: r.value});
+          tmpl.items.insert(r);
         }
       }
     })
 
   },
   'click .set'(evt, tmpl){  
-    tmpl.data.set(tmpl.$(evt.target).attr('data'));
+    //tmpl.data.set(tmpl.$(evt.target).attr('data'));
+    tmpl.data.set(this);
     tmpl.items.remove({});
     tmpl.toggle.set(false);
   }
