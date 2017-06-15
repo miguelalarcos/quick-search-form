@@ -430,8 +430,7 @@ There are two widgets included with the package: *searchInMaster* and *tags*. Th
 ```html
 {{> searchInMaster method='queryClients' set=(setDoc 'client') value=(doc 'client.value') }}
 ```
-This means that we'll set the doc retrieved by the call to *method* in the path *client*.
-
+This means that we'll set the doc selected (in the set of docs retrieved by the call to *method*)in the path *client*.
 
 Tags is like a select type multiple. It's associated to an array type:
 
