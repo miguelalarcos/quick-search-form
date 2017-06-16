@@ -381,11 +381,11 @@ Meteor.methods({
         throw new Meteor.Error("saveError", 'sale is not valid.');
       }
       _id = Sale.insert(doc);
-    }else{
-      doc = flatten(doc, saleSchema);
+    }else{      
       if(!isValidSubDoc(doc, saleSchema)){
         throw new Meteor.Error("saveError", 'sale is not valid.(b)');
       }
+      doc = flatten(doc, saleSchema);
       delete doc._id;        
       Sale.update(_id, {$set: doc});
     }

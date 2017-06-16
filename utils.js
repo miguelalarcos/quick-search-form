@@ -237,7 +237,8 @@ export const validate = (doc, schema, atts=null) => {
 }
 
 export const isValidSubDoc = (doc, schema) => {
-  const dirty = Object.keys(doc);
+  const docf = flatten(doc, schema);  
+  const dirty = Object.keys(docf);
   return isValid(doc, schema, dirty);
 
 }
