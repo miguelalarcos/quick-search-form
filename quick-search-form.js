@@ -140,16 +140,26 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     let self = this;
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
-    //self.dirty = false;
 
     this.autorun(function(){
-      let doc = Session.get(self.data.input) || self.data.initial || {};
-      //if(self.dirty && dirtyCallback)
+      //let doc = Session.get(self.data.input) || self.data.initial || {};
+      let doc = Session.get(self.data.input);
+      if(doc){
+        self.dirty = new Set(['_id']);
+      }else{
+        doc = self.data.initial;
+        if(doc){
+          self.dirty = new Set(Object.keys(doc));
+        }else{
+          doc = {};
+          self.dirty = new Set();
+        }
+      }
       validateWithErrors(doc, schema, self.errors);
       doc = clone(doc, false);
       doc = JSON2form(doc, schema);
       setDoc(self.doc, doc, schema); 
-      self.dirty = new Set(['_id']);
+      //self.dirty = new Set(['_id']);
     });
   });
 

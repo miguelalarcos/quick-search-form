@@ -374,22 +374,8 @@ Meteor.methods({
     delete doc._id;
     Sale.update(_id, {$push: {lines: doc}});
   },  
-  saveSale(doc){        
-    let _id = doc._id;
-    if(!_id){      
-      if(!isValid(doc, saleSchema)){
-        throw new Meteor.Error("saveError", 'sale is not valid.');
-      }
-      _id = Sale.insert(doc);
-    }else{      
-      if(!isValidSubDoc(doc, saleSchema)){
-        throw new Meteor.Error("saveError", 'sale is not valid.(b)');
-      }
-      doc = flatten(doc, saleSchema);
-      delete doc._id;        
-      Sale.update(_id, {$set: doc});
-    }
-    return Sale.findOne(_id);
+  saveSale(doc){   
+    return save(doc, Sale, saleSchema);
   }
 });
 
