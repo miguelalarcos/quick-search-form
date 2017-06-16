@@ -15,15 +15,19 @@ Template.searchInMaster.events({
       }, 0);      
     }
   },
+  'change .query'(evt, tmpl){
+    evt.stopPropagation();
+  },
   'keyup .query'(evt, tmpl){
-    evt.preventDefault();
-    tmpl.items.remove({});
+    evt.stopPropagation();
+    
     let query = evt.currentTarget.value;
     Meteor.call(tmpl.data.method, query, (err, result)=>{
       if(err){
         console.log(err);
       }
       else{
+        tmpl.items.remove({});
         for(let r of result){
           tmpl.items.insert(r);
         }

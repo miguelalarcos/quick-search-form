@@ -22,6 +22,7 @@ export const float = (i) => {i.inputmask('Regex', {
 export const date = (options) => (i) => {i.datepicker(options)}
 
 const validateWithErrors = (obj, schema, errors, att=null) => {  
+  att = att && [att];
   const valids = validate(obj, schema, att);
 
   if(att){
@@ -47,8 +48,14 @@ const validateWithErrors = (obj, schema, errors, att=null) => {
 const getDoc = (rd, schema) => {
   const ret = {};
   for(let k of Object.keys(schema)){
-    if(rd.get(k) == ''){
-    }
+    ret[k] = rd.get(k);
+  }
+  return ret;
+}
+
+const getDocDirty = (rd, dirty) => {
+  const ret = {};
+  for(let k of dirty){
     ret[k] = rd.get(k);
   }
   return ret;
@@ -142,7 +149,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       doc = clone(doc, false);
       doc = JSON2form(doc, schema);
       setDoc(self.doc, doc, schema); 
-      self.dirty = false;
+      self.dirty = new Set(['_id']);
     });
   });
 
@@ -164,20 +171,22 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   template.events({
     'keyup input'(evt, tmpl){
       const name = evt.currentTarget.name;
+      tmpl.dirty.add(name);
+      //console.log('(1)', name);
       //const value = $(evt.currentTarget).val();
       const value = evt.currentTarget.value;
       tmpl.doc.set(name, value);
       let doc = getDoc(tmpl.doc, schema);
       let obj = form2JSON(doc, schema);         
-      validateWithErrors(obj, schema, tmpl.errors, name);
-      tmpl.dirty = true;
+      validateWithErrors(obj, schema, tmpl.errors, name);      
     },
     'change input, change textarea, change select'(evt, tmpl){
       const name = evt.currentTarget.name;
       const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : evt.currentTarget.value;
       const oldValue = tmpl.doc.get(name);
       if(value != oldValue){
-        tmpl.dirty = true;
+        tmpl.dirty.add(name);
+        //console.log('(2)', name);
         tmpl.doc.set(name, value);
         let doc = getDoc(tmpl.doc, schema);
         let obj = form2JSON(doc, schema);         
@@ -201,7 +210,10 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
             Session.set(tmpl.data.input, null);
           }
           if(callback){
-            callback(obj, tmpl.data.input);
+            let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
+            dirty = form2JSON(dirty, schema);
+            dirty = clone(dirty, false);
+            callback(obj, tmpl.data.input, dirty);
           }            
         }
       }
@@ -212,7 +224,8 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       let tmpl = Template.instance();
       return ()=>(value)=>{
         const doc = tmpl.doc;
-        //doc.set(name, value);
+        tmpl.dirty.add(name);
+        //console.log('(3)', name);
         setDocAttrJSON(doc, name, value, schema);
       }
     },
@@ -221,6 +234,8 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       return ()=>(subdoc)=>{
         const doc = tmpl.doc;
         for(let k of Object.keys(subdoc)){
+          tmpl.dirty.add(path+'.'+k);
+          //console.log('(4)', path+'.'+k);
           setDocAttrJSON(doc, path+'.'+k, subdoc[k], schema);
         }
       }

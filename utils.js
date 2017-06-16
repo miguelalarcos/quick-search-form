@@ -9,7 +9,7 @@ export const getDateFormat = ()=>{dateFormat}
 
 const _sep = '.';
 
-const flatten = (doc, schema, sep=_sep) => {
+export const flatten = (doc, schema, sep=_sep) => {
   const ret = {};
   const values = rflatten(doc, schema, '', sep);
   
@@ -201,11 +201,11 @@ export const queryJSON2Mongo = (query, schema) => {
     return unflatten(ret);
 }
 
-export const validate = (doc, schema, att=null) => {   
+export const validate = (doc, schema, atts=null) => {   
     let obj = JSON2Object(doc, schema);  
     let objf = flatten(obj, schema);  
     let ret = {};
-    const keys = att ? [att] : Object.keys(schema);
+    const keys = atts ? atts : Object.keys(schema);
     
     for(let k of keys){ 
         ret[k] = true;
@@ -217,6 +217,7 @@ export const validate = (doc, schema, att=null) => {
         if(_.isArray(objf[k])){
           t1 = 'array';
         }
+        
         let t2 = schema[k].type;
         if(t2 == 'integer' || t2 == 'float' || t2 == 'decimal'){
             t2 = 'number';
@@ -235,8 +236,14 @@ export const validate = (doc, schema, att=null) => {
     return ret;
 }
 
-export const isValid = (doc, schema) => {
-  const valids = validate(doc, schema);    
+export const isValidSubDoc = (doc, schema) => {
+  const dirty = Object.keys(doc);
+  return isValid(doc, schema, dirty);
+
+}
+
+export const isValid = (doc, schema, dirty) => {
+  const valids = validate(doc, schema, dirty);    
   return _.every(_.values(valids))
 }
 
@@ -268,9 +275,10 @@ export const JSON2form = (obj, schema) => {
 
 export const form2JSON = (raw, schema) => {
   const ret = {};
-  const keys = Object.keys(raw);
+  const keys = Object.keys(raw); 
   
   for(let k of keys){
+    
     let type = schema[k].type;
     switch(type){
       case 'integer':

@@ -287,9 +287,8 @@ import './main.html';
 
 setDateFormat('DD/MM/YYYY');
 
-const saveCallback = (doc, input) => {
-  delete doc.lines;
-  Meteor.call('saveSale', doc, (err, result)=>{
+const saveCallback = (doc, input, dirty) => {
+  Meteor.call('saveSale', dirty, (err, result)=>{
     if(err){
       console.log(err);
     }
@@ -351,7 +350,7 @@ Template.lines.helpers({
 server side:
 ```javascript
 import { Meteor } from 'meteor/meteor';
-import { isValid, queryJSON2Mongo } from 'meteor/miguelalarcos:quick-search-form';
+import { isValid, isValidSubDoc, flatten, queryJSON2Mongo } from 'meteor/miguelalarcos:quick-search-form';
 import { searchSchema, Sale, saleSchema } from '/imports/model.js';
 
 const Client = new Mongo.Collection('clients');
@@ -375,20 +374,22 @@ Meteor.methods({
     delete doc._id;
     Sale.update(_id, {$push: {lines: doc}});
   },  
-  saveSale(doc){
-    if(!isValid(doc, saleSchema)){
-      throw new Meteor.Error("saveError", 'sale is not valid.');
-    }
-    const _id = doc._id;
-    doc.amount += 100;
-    if(!_id){
-      doc._id = Sale.insert(doc);
+  saveSale(doc){        
+    let _id = doc._id;
+    if(!_id){      
+      if(!isValid(doc, saleSchema)){
+        throw new Meteor.Error("saveError", 'sale is not valid.');
+      }
+      _id = Sale.insert(doc);
     }else{
-      delete doc._id;
+      doc = flatten(doc, saleSchema);
+      if(!isValidSubDoc(doc, saleSchema)){
+        throw new Meteor.Error("saveError", 'sale is not valid.(b)');
+      }
+      delete doc._id;        
       Sale.update(_id, {$set: doc});
-      doc._id = _id;
     }
-    return doc;
+    return Sale.findOne(_id);
   }
 });
 
