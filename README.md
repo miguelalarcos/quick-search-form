@@ -1,12 +1,12 @@
 # quick-search-form
 
+[![Build Status](https://travis-ci.org/miguelalarcos/quick-search-form.svg?branch=master)](https://travis-ci.org/miguelalarcos/quick-search-form)
+
 [![Join the chat at https://gitter.im/quick-search-form/Lobby](https://badges.gitter.im/quick-search-form/Lobby.svg)](https://gitter.im/quick-search-form/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Create form-objects that you can manipulate.
 
 # Description
-
-[![Build Status](https://travis-ci.org/miguelalarcos/quick-search-form.svg?branch=master)](https://travis-ci.org/miguelalarcos/quick-search-form)
 
 With `qForm` you change the way of thinking about forms. Now the form is not responsible of sending the data to the server. Now it just produce an object that you can manipulate and decide if to send to the server or whatever.
 
@@ -447,3 +447,25 @@ Enhances *template*. Take a look at `<template name="sales">`.
 When Session *input* changes, Session *output* is updated with the value returned by *t*. The argument passed to *t* is Session.get(input).
 * qBase
 You inherit from this base class if you have plans of heavy manipulate the doc.
+
+# helpers
+
+* doc
+* errorMessage
+```html
+<input type="text" name="amount" class="decimal" value={{doc 'amount'}}></td>
+<div class="error">{{errorMessage 'amount'}}</div>
+```
+* setDoc
+```html
+{{> searchInMaster method='queryClients' set=(setDoc 'client') value=(doc 'client.value') }}
+```
+* setattr
+```html
+{{>my_bool_template value=(doc 'attr') set=(setattr 'attr') }}
+```
+* add
+* remove
+```html
+{{> tags value=(doc 'products') add=(add 'products') remove=(remove 'products') }}
+```
