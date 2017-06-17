@@ -44,7 +44,7 @@ const rflatten = (doc, schema, path, sep) => {
   return ret;
 }
 
-const unflatten = (doc, sep=_sep) => {
+export const unflatten = (doc, sep=_sep) => {
   const ret = {};
   for(let k of Object.keys(doc)){
     let aux = ret;
@@ -140,6 +140,9 @@ export const validate = (doc, schema, atts=null) => {
     const keys = atts ? atts : Object.keys(schema);
     
     for(let k of keys){ 
+        if(!_.contains(Object.keys(schema), k)){
+          continue;
+        }
         ret[k] = true;
         const t1 = typeof objf[k];
 
