@@ -7,18 +7,19 @@ export const save = (doc, collection, schema) => {
         if(!isValid(doc, schema)){
             throw new Meteor.Error("saveError", 'doc is not valid.');
         }
-        doc = flatten(doc, schema);
-        doc = _.pick(doc, Object.keys(schema));
+        //doc = flatten(doc, schema);
+        //doc = _.pick(doc, Object.keys(schema));
         _id = collection.insert(doc);
     }else{      
         if(!isValidSubDoc(doc, schema)){
             throw new Meteor.Error("saveError", 'subdoc is not valid.');
         }
         doc = flatten(doc, schema);
-        doc = _.pick(doc, Object.keys(schema));
+        //doc = _.pick(doc, Object.keys(schema));
         delete doc._id;        
         collection.update(_id, {$set: doc});
     }
-    doc['_id'] = _id;
-    return unflatten(doc);
+    return collection.findOne(_id);
+    //doc['_id'] = _id;
+    //return unflatten(doc);
 }

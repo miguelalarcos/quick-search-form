@@ -24,6 +24,16 @@ const rflatten = (doc, schema, path, sep) => {
   if(schema[path]){ 
     return {path, doc};
   }
+  let flag = false;
+  for(let ks of Object.keys(schema)){
+    if(ks.startsWith(path)){
+      flag = true;
+      break;
+    }
+  }
+  if(!flag){
+    return null; //{path, doc};
+  }
   const ret = [];
   for(let key of Object.keys(doc)){
     let path_;
@@ -37,7 +47,7 @@ const rflatten = (doc, schema, path, sep) => {
       for(let v of f){
         ret.push(v);
       }
-    }else{
+    }else if(f != null){
       ret.push(f);
     }
   }

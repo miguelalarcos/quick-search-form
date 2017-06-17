@@ -104,3 +104,9 @@ Tinytest.add('validate - full', function (test) {
   test.equal(valids, expected);
 });
 
+Tinytest.add('validate sub doc - full', function (test) {  
+  const obj = {a:'not in schema', b:'hello', c:6, d:3, e: false};
+  const valids = validate(obj, schema_validate, ['a', 'b', 'c', 'd', 'e']);
+  const expected = {b:true, c: true, d: false, e: false};
+  test.equal(valids, expected);
+});
