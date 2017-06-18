@@ -1,7 +1,13 @@
 export { unflatten, flatten, isValid, isValidSubDoc, queryJSON2Mongo } from './utils.js';
 import { unflatten, flatten, isValid, isValidSubDoc } from './utils.js';
 
+export const filter = (doc, schema) => {
+    let ret = flatten(doc, schema); // flatten filters
+    return unflatten(doc);
+}
+
 export const save = (doc, collection, schema) => {
+    doc = filter(doc, schema);
     let _id = doc._id;
     if(!_id){      
         if(!isValid(doc, schema)){
