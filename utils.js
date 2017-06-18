@@ -144,7 +144,7 @@ export const queryJSON2Mongo = (query, schema) => {
 }
 
 export const validate = (doc, schema, atts=null) => {   
-    let obj = JSON2Object(doc, schema);  
+    let obj = doc; //JSON2Object(doc, schema);  
     let objf = flatten(obj, schema);  
     let ret = {};
     const keys = atts ? atts : Object.keys(schema);
@@ -156,7 +156,8 @@ export const validate = (doc, schema, atts=null) => {
         ret[k] = true;
         const t1 = typeof objf[k];
 
-        if(moment.isMoment(objf[k])){  
+        //if(moment.isMoment(objf[k])){ 
+        if(_.isDate(objf[k])){
           t1 = 'date';
         }
         if(_.isArray(objf[k])){

@@ -169,7 +169,7 @@ If you want to create a custom template for a type (see *tags* below) you will h
 
 When your template wants to change the value of the *attr*, it has to call `set(value)`.
 
-The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute (*moment* and *decimal* way) and the full object. There's an `isValid` function that return *true* or *false*.
+The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute and the full doc. There's an `isValid` function that return *true* or *false*.
 
 But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.isValid()`.
 
@@ -390,16 +390,17 @@ Meteor.publish('sales', function(query){
 
 both:
 ```javascript
+import moment from 'moment';
 export const Sale = new Mongo.Collection('sales');
 
 export const searchSchema = {
-      sale_date$gte: {type: 'date', validate: (v) => v && v.isValid()},
-      sale_date$lte: {type: 'date', validate: (v) => v && v.isValid()}
+      sale_date$gte: {type: 'date', validate: (v) => v && moment(v).isValid()},
+      sale_date$lte: {type: 'date', validate: (v) => v && moment(v).isValid()}
 }
 
 export const saleSchema = {
       _id: {type: 'string'},
-      sale_date: {type: 'date', message: 'must be valid date', validate: (v) => v && v.isValid()},
+      sale_date: {type: 'date', message: 'must be valid date', validate: (v) => v && moment(v).isValid()},
       amount: {type: 'float', message: 'must be greater than 0', validate: (v) => v > 0},
       'client.value': {type: 'string'},
       'client._id': {type: 'string'},
@@ -469,3 +470,21 @@ You inherit from this base class if you have plans of heavy manipulate the doc.
 ```html
 {{> tags value=(doc 'products') add=(add 'products') remove=(remove 'products') }}
 ```
+
+# functions
+
+* JSON2Object(jsonDoc, schema)
+  converts all dates to moment and all decimals to instances of Decimal.js.
+* object2JSON(obj, schema)
+  the reverse.
+* queryJSON2Mongo(query, schema)
+  converts a JSON-mongo-like doc to a correct doc to pass to Mongo funcs.
+* isValid(doc, schema, dirty)
+  test all keys of schema against the doc.
+* isValidSubDoc(doc, schema)
+  test only the keys of the doc.
+* setDateFormat(format)
+  set the date format (moment way) for the app.
+* filter(doc, schema)
+  eliminates all the keys of doc that don't exist in schema.
+
