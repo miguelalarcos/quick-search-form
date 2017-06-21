@@ -7,6 +7,30 @@ export const setDateFormat = (str) => {dateFormat=str}
 
 export const getDateFormat = ()=>{dateFormat}
 
+export const filter = (doc, schema) => {
+    let ret = flatten(doc, schema); // flatten filters
+    return unflatten(doc);
+}
+
+export const save = (doc, collection, schema) => {
+    doc = filter(doc, schema);
+    let _id = doc._id;
+    if(!_id){      
+        if(!isValid(doc, schema)){
+            throw new Meteor.Error("saveError", 'doc is not valid.');
+        }
+        _id = collection.insert(doc);
+    }else{      
+        if(!isValidSubDoc(doc, schema)){
+            throw new Meteor.Error("saveError", 'subdoc is not valid.');
+        }
+        doc = flatten(doc, schema);
+        delete doc._id;        
+        collection.update(_id, {$set: doc});
+    }
+    return collection.findOne(_id);
+}
+
 const _sep = '.';
 
 export const flatten = (doc, schema, sep=_sep) => {

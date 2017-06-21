@@ -2,7 +2,7 @@ import { Template } from 'meteor/templating';
 import { Tracker } from 'meteor/tracker';
 import moment from 'moment';
 import Decimal from 'decimal.js';
-export { setDateFormat, qBase, queryJSON2Mongo, isValid } from './utils.js';
+export { save, filter, setDateFormat, qBase, queryJSON2Mongo, isValid } from './utils.js';
 import { getDateFormat, queryJSON2Mongo, isValid, validate, form2JSON, JSON2form } from './utils.js'; 
 import './widgets/searchInMaster.js';
 import './widgets/tags.js';
@@ -179,7 +179,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   });
 
   template.events({
-    'keyup input'(evt, tmpl){
+    'keyup input, keyup textarea'(evt, tmpl){
       const name = evt.currentTarget.name;
       tmpl.dirty.add(name);
       //console.log('(1)', name);
