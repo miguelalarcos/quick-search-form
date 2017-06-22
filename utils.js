@@ -19,6 +19,7 @@ export const save = (doc, collection, schema) => {
         if(!isValid(doc, schema)){
             throw new Meteor.Error("saveError", 'doc is not valid.');
         }
+        delete doc._id;
         _id = collection.insert(doc);
     }else{      
         if(!isValidSubDoc(doc, schema)){

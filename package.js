@@ -1,6 +1,6 @@
 Package.describe({
   name: 'miguelalarcos:quick-search-form',
-  version: '0.3.7',
+  version: '0.3.8',
   // Brief, one-line summary of the package.
   summary: 'Create form-objects that you can manipulate.',
   // URL to the Git repository containing the source code for this package.
