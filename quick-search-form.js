@@ -119,7 +119,7 @@ export const qList = (template, {name, schema, collection}) => {
     return collection.find(query);
   }
 
-  Template.sales.helpers(helpers);
+  template.helpers(helpers);
 
   template.events({
     'click .edit'(evt, tmpl){
