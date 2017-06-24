@@ -49,6 +49,11 @@ const rflatten = (doc, schema, path, sep) => {
   if(schema[path]){ 
     return {path, doc};
   }
+  const t = typeof doc;
+  if(t !== 'object' || _.isDate(doc) || _.isArray(doc) || moment.isMoment(doc) || doc.abs){
+    return null;
+  }
+  /*
   let flag = false;
   for(let ks of Object.keys(schema)){
     if(ks.startsWith(path)){
@@ -59,6 +64,7 @@ const rflatten = (doc, schema, path, sep) => {
   if(!flag){
     return null; //{path, doc};
   }
+  */
   const ret = [];
   for(let key of Object.keys(doc)){
     let path_;
@@ -179,7 +185,7 @@ export const validate = (doc, schema, atts=null) => {
           continue;
         }
         ret[k] = true;
-        const t1 = typeof objf[k];
+        let t1 = typeof objf[k];
 
         //if(moment.isMoment(objf[k])){ 
         if(_.isDate(objf[k])){
