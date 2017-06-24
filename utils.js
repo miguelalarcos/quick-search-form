@@ -9,7 +9,7 @@ export const getDateFormat = ()=>{dateFormat}
 
 export const filter = (doc, schema) => {
     let ret = flatten(doc, schema); // flatten filters
-    return unflatten(doc);
+    return unflatten(ret);
 }
 
 export const save = (doc, collection, schema) => {
@@ -37,7 +37,6 @@ const _sep = '.';
 export const flatten = (doc, schema, sep=_sep) => {
   const ret = {};
   const values = rflatten(doc, schema, '', sep);
-  
   for(let x of values){
     ret[x.path] = x.doc;
   }
@@ -53,22 +52,11 @@ const rflatten = (doc, schema, path, sep) => {
   if(t !== 'object' || _.isDate(doc) || _.isArray(doc) || moment.isMoment(doc) || doc.abs){
     return null;
   }
-  /*
-  let flag = false;
-  for(let ks of Object.keys(schema)){
-    if(ks.startsWith(path)){
-      flag = true;
-      break;
-    }
-  }
-  if(!flag){
-    return null; //{path, doc};
-  }
-  */
+
   const ret = [];
   for(let key of Object.keys(doc)){
     let path_;
-    if(path == ''){
+    if(path === ''){
       path_ = key;
     }else{
       path_ = path + sep + key;

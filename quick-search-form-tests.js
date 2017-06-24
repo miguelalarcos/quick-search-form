@@ -1,5 +1,5 @@
 import { Tinytest } from "meteor/tinytest";
-import { validate, queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
+import { filter, validate, queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 import Decimal from 'decimal.js';
 import moment from 'moment';
 
@@ -90,6 +90,7 @@ Tinytest.add('object2JSON - date simple', function (test) {
 });
 
 const schema_validate = {
+  'a.a': {type: 'string'},
   b: {type: 'string'},
   c: {type: 'integer', validate: (v)=>v>5},
   d: {type: 'integer', validate: (v)=>v>5},
@@ -100,7 +101,7 @@ const schema_validate = {
 Tinytest.add('validate - full', function (test) {  
   const obj = {b:'hello', c:6, d:3, e: false};
   const valids = validate(obj, schema_validate);
-  const expected = {b:true, c: true, d: false, e: false, f:false};
+  const expected = {'a.a': true, b:true, c: true, d: false, e: false, f:false};
   test.equal(valids, expected);
 });
 
@@ -109,4 +110,11 @@ Tinytest.add('validate sub doc - full', function (test) {
   const valids = validate(obj, schema_validate, ['a', 'b', 'c', 'd', 'e']);
   const expected = {b:true, c: true, d: false, e: false};
   test.equal(valids, expected);
+});
+
+Tinytest.add('filter doc - full', function (test) {
+    const obj = {a:'not in schema', b:'hello', c:6, d:3, e: false};
+    const filtered = filter(obj, schema_validate);
+    const expected = {b:'hello', c:6, d:3, e: false};
+    test.equal(filtered, expected);
 });
