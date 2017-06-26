@@ -2,7 +2,7 @@ import './tags.html';
 
 Template.tags.events({
   'change select'(evt, tmpl){
-      evt.preventDefault();
+      evt.stopPropagation();
       tmpl.data.add(evt.currentTarget.value);
   },  
   'click .delete-tag'(evt, tmpl){

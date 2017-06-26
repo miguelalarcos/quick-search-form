@@ -8,6 +8,7 @@ import './widgets/searchInMaster.js';
 import './widgets/tags.js';
 import clone from 'clone';
 import { ReactiveDict } from 'meteor/reactive-dict';
+import './automatic.html';
 
 export const integer = (i) => {i.inputmask('Regex', { 
     regex: "^[+-]?\\d+$"
@@ -137,6 +138,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   }
 
   template.onCreated(function(){
+    schema = schema || this.data.schema;
     let self = this;
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
@@ -180,6 +182,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
 
   template.events({
     'keyup input, keyup textarea'(evt, tmpl){
+      schema = schema || tmpl.data.schema;
       const name = evt.currentTarget.name;
       tmpl.dirty.add(name);
       //console.log('(1)', name);
@@ -191,6 +194,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       validateWithErrors(obj, schema, tmpl.errors, name);      
     },
     'change input, change textarea, change select'(evt, tmpl){
+      schema = schema || tmpl.data.schema;
       const name = evt.currentTarget.name;
       const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : evt.currentTarget.value;
       const oldValue = tmpl.doc.get(name);
@@ -208,6 +212,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       Session.set(tmpl.data.input, null);
     },
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
+        schema = schema || tmpl.data.schema;
         let doc = getDoc(tmpl.doc, schema);
         let obj = form2JSON(doc, schema);   
         if(validateWithErrors(obj, schema, tmpl.errors)){
@@ -232,6 +237,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   template.helpers({
     setattr(name){
       let tmpl = Template.instance();
+      schema = schema || tmpl.data.schema;
       return ()=>(value)=>{
         const doc = tmpl.doc;
         tmpl.dirty.add(name);
@@ -241,6 +247,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     },
     setDoc(path){
       let tmpl = Template.instance();
+      schema = schema || tmpl.data.schema;
       return ()=>(subdoc)=>{
         const doc = tmpl.doc;
         for(let k of Object.keys(subdoc)){
@@ -254,10 +261,11 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       let tmpl = Template.instance();
       return ()=>(value)=>{
         const doc = tmpl.doc;
-        let arr = doc.get(attribute);
+        let arr = doc.get(attribute) || [];
         if(!_.contains(arr, value)){
           arr.push(value);
-          doc.set(attribute, arr);
+          doc.set(attribute, arr);//
+          tmpl.dirty.add(attribute);
         }
       }
     },
@@ -269,6 +277,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
         if(_.contains(arr, value)){
           arr = _.filter(arr, (x)=>x!=value);
           doc.set(attribute, arr);
+          tmpl.dirty.add(attribute);
         }
       }
     },
@@ -281,6 +290,8 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
       return errors.get(attribute);
     },
     isValid(){
+      let tmpl = Template.instance();
+      schema = schema || tmpl.data.schema;
       const errors = Template.instance().errors;
 
       for(let k of Object.keys(schema)){
@@ -292,3 +303,37 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     }
   });
 }
+
+Template.qFormAutomatic.helpers({
+    qinput(){
+        const schema = Template.instance().data.schema;
+        const ret = [];
+        for (let k of Object.keys(schema)) {
+            let schval = schema[k];
+            schval.name = k;
+            ret.push(schval);
+        }
+        return ret;
+    },
+    isTextArea(){
+      return this.type === 'string' && this.textarea;
+    },
+    isSelect(){
+      return this.type === 'string' && this.options;
+    },
+    isString(){
+      return this.type === 'string' && !this.textarea && !this.options;
+    },
+    isInteger(){
+        return this.type === 'integer';
+    },
+    isFloat(){
+        return this.type === 'float';
+    },
+    isBoolean(){
+        return this.type === 'boolean';
+    },
+    isArray(){
+        return this.type === 'array';
+    }
+});

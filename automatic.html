@@ -1,0 +1,49 @@
+<template name="qFormAutomatic">
+    <div>
+        <table>
+        {{#each qinput}}
+            <tr>
+                <td>
+                    <span>{{title}}</span>
+                </td>
+                <td>
+                    <!--{> qAutomaticField value=(doc name) add=(add name) remove=(remove name) type=type textarea=textarea name=name rows=rows cols=cols options=options }}
+                    -->
+                    {{#if isTextArea}}
+                        <textarea class="string" name="{{name}}" rows="{{rows}}" cols="{{cols}}">{{doc name}}</textarea>
+                    {{/ if}}
+                    {{#if isSelect}}
+                        <select>
+                            <option value=""></option>
+                            {{# each options }}
+                                <option value={{this}}>{{this}}</option>
+                            {{/ each }}
+                        </select>
+                    {{/ if}}
+                    {{#if isString}}
+                        <input class="string" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isInteger}}
+                        <input class="integer" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isFloat}}
+                        <input class="float" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isBoolean}}
+                        <input class="boolean" type="checkbox" name="{{name}}" checked={{doc name}}>
+                    {{/ if}}
+                    {{#if isArray}}
+                        {{> tags options=options value=(doc name) add=(add name) remove=(remove name) }}
+                    {{/ if}}
+                </td>
+            </tr>
+            <tr>
+                <td><div class="error">{{errorMessage name}}</div></td>
+            </tr>
+        {{/ each}}
+        </table>
+        {{# if isValid }}
+            <a href="#" class="submit">Submit</a>
+        {{/ if }}
+    </div>
+</template>

@@ -1,7 +1,8 @@
 <template name="tags">
   <div>
     <select>
-      {{#each items}}  
+      <option value=""></option>
+      {{#each options}}
         <option value={{this}}>{{this}}</option>
       {{/each}}  
     </select>

@@ -191,6 +191,12 @@ export const validate = (doc, schema, atts=null) => {
             ret[k] = false;
             continue;
         }
+
+        if (schema[k].required && !objf[k]) {
+            ret[k] = false;
+            continue;
+        }
+
         const v = schema[k].validate;        
 
         if(v && !v(objf[k], obj)){
@@ -242,9 +248,8 @@ export const JSON2form = (obj, schema) => {
 export const form2JSON = (raw, schema) => {
   const ret = {};
   const keys = Object.keys(raw); 
-  
+
   for(let k of keys){
-    
     let type = schema[k].type;
     switch(type){
       case 'integer':
