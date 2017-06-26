@@ -149,7 +149,7 @@ qForm(Template.my_search, {schema, integer, callback});
 *integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (this package provides you with *integer*, *float* and *date*):
 
 ```javascript
-export const integer = (i) => {i.inputmask('Regex', { 
+export const integer = (i) => {i.inputmask('Regex', {
     regex: "^[+-]?\\d+$"
     });
 }
@@ -205,9 +205,9 @@ In the next example you can see a form to push and remove to an array of an obje
         </span>
         {{# if isValid}}
           <a href="#" class="submit">Search</a>
-        {{/ if}}  
+        {{/ if}}
         </form>
-  </div>  
+  </div>
 </template>
 
 <template name="sales">
@@ -220,7 +220,7 @@ In the next example you can see a form to push and remove to an array of an obje
           <td class="edit">edit</td>
         </tr>
       {{/ each}}
-    </table>  
+    </table>
   </div>
 </template>
 
@@ -249,10 +249,10 @@ In the next example you can see a form to push and remove to an array of an obje
         {{# if isValid}}
           <a href="#" class="submit">Save</a>
         {{/ if}}
-        <a href="#" class="reset">Reset</a>  
+        <a href="#" class="reset">Reset</a>
         </table>
-    </form>        
-  </div>  
+    </form>
+  </div>
 </template>
 
 <template name="lines">
@@ -309,7 +309,7 @@ qForm(Template.sale, {schema: saleSchema, date: date(dateOptions), float, callba
 
 Template.main.helpers({
   initial() {
-    const today = moment().startOf('day').toDate();  
+    const today = moment().startOf('day').toDate();
     return {sale_date$gte: today, sale_date$lte: today};
   },
   lineVisible(){
@@ -373,8 +373,8 @@ Meteor.methods({
     const _id = doc._id;
     delete doc._id;
     Sale.update(_id, {$push: {lines: doc}});
-  },  
-  saveSale(doc){   
+  },
+  saveSale(doc){
     return save(doc, Sale, saleSchema);
   }
 });
@@ -427,6 +427,80 @@ Tags is like a select type multiple. It's associated to an array type:
 ```html
 {{> tags value=(doc 'products') add=(add 'products') remove=(remove 'products') }}
 ```
+
+# Automatic forms
+
+Given a template like this (it's included in the package, but you can build your own with your favourite CSS classes):
+
+```html
+<template name="qFormAutomatic">
+    <div>
+        <table>
+        {{#each qinput}}
+            <tr>
+                <td>
+                    <span>{{title}}</span>
+                </td>
+                <td>
+                    {{#if isTextArea}}
+                        <textarea class="string" name="{{name}}" rows="{{rows}}" cols="{{cols}}">{{doc name}}</textarea>
+                    {{/ if}}
+                    {{#if isSelect}}
+                        <select>
+                            <option value=""></option>
+                            {{# each options }}
+                                <option value={{this}}>{{this}}</option>
+                            {{/ each }}
+                        </select>
+                    {{/ if}}
+                    {{#if isString}}
+                        <input class="string" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isInteger}}
+                        <input class="integer" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isFloat}}
+                        <input class="float" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isBoolean}}
+                        <input class="boolean" type="checkbox" name="{{name}}" checked={{doc name}}>
+                    {{/ if}}
+                    {{#if isArray}}
+                        {{> tags options=options value=(doc name) add=(add name) remove=(remove name) }}
+                    {{/ if}}
+                </td>
+            </tr>
+            <tr>
+                <td><div class="error">{{errorMessage name}}</div></td>
+            </tr>
+        {{/ each}}
+        </table>
+        {{# if isValid }}
+            <a href="#" class="submit">Submit</a>
+        {{/ if }}
+    </div>
+</template>
+```
+
+You can: `{{> qFormAutomatic input='input1' output='output2' schema=schema}}`
+
+Please note that you pass the schema in the template inclusion.
+
+And this is a schema example:
+
+```javascript
+schema(){
+  return {
+    a: {type: 'string', title: 'A:', required: true, message: 'it is mandatory'},
+    b: {type: 'integer', title: 'B:'},
+    c: {type: 'string', title: 'C:', textarea: true, rows: 10, cols: 40},
+    d: {type: 'array', title: 'D:', options: ['red', 'yellow']},
+    e: {type: 'boolean', title: 'E:'}
+  };
+}
+```
+
+You can import `automaticHelpers` so you can build your own automatic form:
 
 # API
 

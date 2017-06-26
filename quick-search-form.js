@@ -304,7 +304,7 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
   });
 }
 
-Template.qFormAutomatic.helpers({
+export const automaticHelpers = {
     qinput(){
         const schema = Template.instance().data.schema;
         const ret = [];
@@ -336,4 +336,6 @@ Template.qFormAutomatic.helpers({
     isArray(){
         return this.type === 'array';
     }
-});
+};
+
+Template.qFormAutomatic.helpers(automaticHelpers);
