@@ -492,7 +492,7 @@ Given a template like this (it's included in the package, but you can build your
 
 Then you can include the template: `{{> qFormAutomatic input='input1' output='output2' schema=schema}}`
 
-Please note that you pass the schema in the template inclusion.
+Please note that you pass the schema in the template inclusion. In this case you can have schemas in database and fetch theme before template inclusion.
 
 And this is a schema example:
 
