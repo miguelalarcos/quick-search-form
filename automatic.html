@@ -33,6 +33,12 @@
                     {{#if isArray}}
                         {{> tags options=options value=(doc name) add=(add name) remove=(remove name) }}
                     {{/ if}}
+                    {{#if isDate}}
+                        <input class="date" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isDecimal}}
+                        <input class="decimal" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
                 </td>
             </tr>
             <tr>

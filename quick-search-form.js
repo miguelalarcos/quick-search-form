@@ -324,6 +324,12 @@ export const automaticHelpers = {
     isString(){
       return this.type === 'string' && !this.textarea && !this.options;
     },
+    isDate(){
+        return this.type === 'date';
+    },
+    isDecimal(){
+        return this.type === 'decimal';
+    },
     isInteger(){
         return this.type === 'integer';
     },

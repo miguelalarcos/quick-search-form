@@ -8,6 +8,8 @@ Create form-objects that you can manipulate.
 
 # Description
 
+`meteor add miguelalarcos:quick-search-form`
+
 With `qForm` you change the way of thinking about forms. Now the form is not responsible of sending the data to the server. Now it just produce an object that you can manipulate and decide if to send to the server or whatever.
 
 For example, one of the things you can do with this package is to create a search-form, i.e., a form that produces a query Mongo-like that you can use to subscribe to some publication.
@@ -468,6 +470,12 @@ Given a template like this (it's included in the package, but you can build your
                     {{#if isArray}}
                         {{> tags options=options value=(doc name) add=(add name) remove=(remove name) }}
                     {{/ if}}
+                    {{#if isDate}}
+                        <input class="date" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
+                    {{#if isDecimal}}
+                        <input class="decimal" type="text" name="{{name}}" value={{doc name}}>
+                    {{/ if}}
                 </td>
             </tr>
             <tr>
@@ -482,7 +490,7 @@ Given a template like this (it's included in the package, but you can build your
 </template>
 ```
 
-You can: `{{> qFormAutomatic input='input1' output='output2' schema=schema}}`
+Then you can include the template: `{{> qFormAutomatic input='input1' output='output2' schema=schema}}`
 
 Please note that you pass the schema in the template inclusion.
 
@@ -500,7 +508,7 @@ schema(){
 }
 ```
 
-You can import `automaticHelpers` so you can build your own automatic form:
+You can import `automaticHelpers` so you can build your own automatic form.
 
 # API
 

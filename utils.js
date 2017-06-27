@@ -184,15 +184,15 @@ export const validate = (doc, schema, atts=null) => {
         }
         
         let t2 = schema[k].type;
-        if(t2 == 'integer' || t2 == 'float' || t2 == 'decimal'){
+        if(t2 === 'integer' || t2 === 'float' || t2 === 'decimal'){
             t2 = 'number';
         }
-        if(t1 != 'undefined' && t1 != t2){
+        if(t1 !== 'undefined' && t1 !== t2){
             ret[k] = false;
             continue;
         }
 
-        if (schema[k].required && !objf[k]) {
+        if (schema[k].required && (objf[k] === undefined || objf[k] === '')) {
             ret[k] = false;
             continue;
         }
