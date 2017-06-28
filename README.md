@@ -118,21 +118,10 @@ And the call to the template is:
 This is another example of schema, with validation:
 
 ```javascript
-const isBlank = (x)=>{return x == undefined || x == null || x == ''}
-
 const schema_form = {
-      a: {type: 'integer', message: 'a must be greater than 5', validate: (v, obj) => {
-        if(!isBlank(v)){
-          return v > 5;
-        }
-        return true;
-      }
-    },
-      b: {type: 'string', message: 'b is mandatory', validate: (v, obj) => {
-        return !isBlank(v);
-      }
-    },
-    c: {type: 'array'}
+      a: {type: 'integer', required: true, message: 'a must be greater than 5', validate: (v, obj) => v > 5},
+      b: {type: 'string', required: true, message: 'b is mandatory'},
+      c: {type: 'array'}
 };
 ```
 
@@ -494,18 +483,16 @@ Then you can include the template: `{{> qFormAutomatic input='input1' output='ou
 
 Please note that you pass the schema in the template inclusion. In this case you can have schemas in database and fetch theme before template inclusion.
 
-And this is a schema example:
+And this is a schema example (`textarea`, `rows`, `cols` and `options` are useful in this case):
 
 ```javascript
-schema(){
-  return {
+schema = {
     a: {type: 'string', title: 'A:', required: true, message: 'it is mandatory'},
     b: {type: 'integer', title: 'B:'},
     c: {type: 'string', title: 'C:', textarea: true, rows: 10, cols: 40},
     d: {type: 'array', title: 'D:', options: ['red', 'yellow']},
     e: {type: 'boolean', title: 'E:'}
-  };
-}
+  }
 ```
 
 You can import `automaticHelpers` so you can build your own automatic form.
@@ -533,40 +520,40 @@ You inherit from this base class if you have plans of heavy manipulate the doc.
 
 # helpers
 
-* doc
-* errorMessage
+* `doc`
+* `errorMessage`
 ```html
 <input type="text" name="amount" class="decimal" value={{doc 'amount'}}></td>
 <div class="error">{{errorMessage 'amount'}}</div>
 ```
-* setDoc
+* `setDoc`
 ```html
 {{> searchInMaster method='queryClients' set=(setDoc 'client') value=(doc 'client.value') }}
 ```
-* setattr
+* `setattr`
 ```html
 {{>my_bool_template value=(doc 'attr') set=(setattr 'attr') }}
 ```
-* add
-* remove
+* `add`
+* `remove`
 ```html
 {{> tags value=(doc 'products') add=(add 'products') remove=(remove 'products') }}
 ```
 
 # functions
 
-* JSON2Object(jsonDoc, schema)
+* `JSON2Object(jsonDoc, schema)`
   converts all dates to moment and all decimals to instances of Decimal.js.
-* object2JSON(obj, schema)
+* `object2JSON(obj, schema)`
   the reverse.
-* queryJSON2Mongo(query, schema)
+* `queryJSON2Mongo(query, schema)`
   converts a JSON-mongo-like doc to a correct doc to pass to Mongo funcs.
-* isValid(doc, schema, dirty)
+* `isValid(doc, schema, dirty)`
   test all keys of schema against the doc.
-* isValidSubDoc(doc, schema)
+* `isValidSubDoc(doc, schema)`
   test only the keys of the doc.
-* setDateFormat(format)
+* `setDateFormat(format)`
   set the date format (moment way) for the app.
-* filter(doc, schema)
+* `filter(doc, schema)`
   eliminates all the keys of doc that don't exist in schema.
 
