@@ -177,12 +177,17 @@ In the next example you can see a form to push and remove to an array of an obje
 
 <template name="main">
   {{> search initial=initial output='querySearch'}}
+  {{> reset output='sale'}}
   {{> sales input="querySearch" output="sale"}}
-  {{> sale input="sale"}}
+  {{> sale input="sale" initial=saleInitial}}
   <div>Lines and create line:</div>
   {{> lines input="sale"}}
   <!-- there's an autorun to go from sale to line -->
   {{> line input="line"}}
+</template>
+
+<template name="reset">
+    <a href="#" class="reset">reset</a>
 </template>
 
 <template name="search">
@@ -284,7 +289,7 @@ const saveCallback = (doc, input, dirty) => {
       console.log(err);
     }
     else{
-      Session.set(input, result);
+      
     }
   });
 }
@@ -296,22 +301,29 @@ const dateOptions = {
 
 qForm(Template.search, {schema: searchSchema, date: date(dateOptions), resetAfterSubmit: false});
 qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
-qForm(Template.sale, {schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
+qForm(Template.sale, {collection: Sale, schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
 
 Template.main.helpers({
   initial() {
     const today = moment().startOf('day').toDate();
     return {sale_date$gte: today, sale_date$lte: today};
   },
+  saleInitial(){
+    return {amount: 999};
+  },
   lineVisible(){
     return Session.get('sale');
   }
 });
 
+Template.reset.events({
+    'click .reset'(evt, tmpl){
+      Session.set(tmpl.data.output, null);
+    }
+});
+
 const lineSave = (doc, input) => {
   Meteor.call('lineSave', doc);
-  // this is important, because the line form must have the _id of the sale
-  Session.set(input, {_id: doc._id});
 }
 
 qForm(Template.line, {schema: lineSchema, callback: lineSave});
