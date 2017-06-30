@@ -22,7 +22,7 @@ export const float = (i) => {i.inputmask('Regex', {
 
 export const date = (options) => (i) => {i.datepicker(options)}
 
-const validateWithErrors = (obj, schema, errors, att=null) => {  
+const validateWithErrors = (obj, schema, errors, att=null) => {
   att = att && [att];
   const valids = validate(obj, schema, att);
 
@@ -124,18 +124,17 @@ export const qList = (template, {name, schema, collection}) => {
 
   template.events({
     'click .edit'(evt, tmpl){
-      //const _id = $(evt.target).attr('docId');
-      const doc = this; //collection.findOne(_id);
+      const doc = this;
       Session.set(tmpl.data.output, doc);
     }
   });  
 }
 
-export const qForm = (template, {schema, integer, float, date, autocomplete, callback, resetAfterSubmit}) => {
+export const qForm = (template, {collection, schema, integer, float, date, autocomplete, callback}) => {
 
-  if(resetAfterSubmit == undefined){
-    resetAfterSubmit = true;
-  }
+  //if(resetAfterSubmit == undefined){
+  //  resetAfterSubmit = true;
+  //}
 
   template.onCreated(function(){
     schema = schema || this.data.schema;
@@ -143,19 +142,19 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
 
-    this.autorun(function(){
-      //let doc = Session.get(self.data.input) || self.data.initial || {};
+    this.compute = this.autorun(function(){
       let doc = Session.get(self.data.input);
       if(doc){
-        self.dirty = new Set(['_id']);
-      }else{
-        doc = self.data.initial;
-        if(doc){
-          self.dirty = new Set(Object.keys(doc));
-        }else{
-          doc = {};
-          self.dirty = new Set();
+        if(doc._id && collection) {
+            doc = collection.findOne(doc._id) || {};
         }
+        self.dirty = new Set(['_id']);
+      }else if(self.data.initial){
+        doc = self.data.initial;
+        self.dirty = new Set(Object.keys(doc));
+      }else{
+        doc = {};
+        self.dirty = new Set();
       }
       validateWithErrors(doc, schema, self.errors);
       doc = clone(doc, false);
@@ -207,10 +206,10 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
         validateWithErrors(obj, schema, tmpl.errors, name);
       }
     },
-    'click .reset'(evt, tmpl){
-      Session.set(tmpl.data.input, {});
-      Session.set(tmpl.data.input, null);
-    },
+    //'click .reset'(evt, tmpl){
+    //  Session.set(tmpl.data.input, {});
+    //  Session.set(tmpl.data.input, null);
+    //},
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
         schema = schema || tmpl.data.schema;
         let doc = getDoc(tmpl.doc, schema);
@@ -220,10 +219,11 @@ export const qForm = (template, {schema, integer, float, date, autocomplete, cal
           if(tmpl.data.output){
             Session.set(tmpl.data.output, obj);
           }
-          if(resetAfterSubmit){
-            Session.set(tmpl.data.input, {});
-            Session.set(tmpl.data.input, null);
-          }
+          //if(resetAfterSubmit){
+            //Session.set(tmpl.data.input, {});
+            //Session.set(tmpl.data.input, null);
+          tmpl.compute.invalidate();
+          //}
           if(callback){
             let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
             dirty = form2JSON(dirty, schema);

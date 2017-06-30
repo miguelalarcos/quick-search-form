@@ -162,7 +162,7 @@ export const queryJSON2Mongo = (query, schema) => {
     return unflatten(ret);
 }
 
-export const validate = (doc, schema, atts=null) => {   
+export const validate = (doc, schema, atts=null) => {
     let obj = doc; //JSON2Object(doc, schema);  
     let objf = flatten(obj, schema);  
     let ret = {};
