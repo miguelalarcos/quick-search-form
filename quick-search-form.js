@@ -88,18 +88,14 @@ const setDocAttrJSON = (rd, name, value, schema) => {
     rd.set(name, value);
 }
 
-
 export const qConnect = (input, output, t) => {
-  Tracker.autorun(()=>{
     let x = Session.get(input);
     if(x){
-      const v = t(x)
-      Session.set(output, v);
+        Session.set(output, t(x));
     }
     else{
-      Session.set(output, null);
+        Session.set(output, null);
     }
-  });
 }
 
 export const qList = (template, {name, schema, collection}) => {
@@ -132,13 +128,14 @@ export const qList = (template, {name, schema, collection}) => {
 
 export const qForm = (template, {collection, schema, integer, float, date, autocomplete, callback}) => {
 
-  //if(resetAfterSubmit == undefined){
-  //  resetAfterSubmit = true;
-  //}
-
   template.onCreated(function(){
     schema = schema || this.data.schema;
     let self = this;
+
+    if(self.data.map){
+      this.autorun(()=>self.data.map());
+    }
+
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
 
@@ -147,8 +144,14 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
       if(doc){
         if(doc._id && collection) {
             doc = collection.findOne(doc._id) || {};
+            self.dirty = new Set(['_id']);
+        }else{
+          if(self.data.initial){
+            Object.assign(doc, self.data.initial);
+          }
+          self.dirty = new Set(Object.keys(doc));
         }
-        self.dirty = new Set(['_id']);
+        //self.dirty = new Set(['_id']);
       }else if(self.data.initial){
         doc = self.data.initial;
         self.dirty = new Set(Object.keys(doc));

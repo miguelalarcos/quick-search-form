@@ -180,10 +180,11 @@ In the next example you can see a form to push and remove to an array of an obje
   {{> reset output='sale'}}
   {{> sales input="querySearch" output="sale"}}
   {{> sale input="sale" initial=saleInitial}}
-  <div>Lines and create line:</div>
-  {{> lines input="sale"}}
-  <!-- there's an autorun to go from sale to line -->
-  {{> line input="line"}}
+  {{# if lineVisible}}
+    <div>Lines and create line:</div>
+    {{> lines input="sale"}}
+    {{> line input="line" map=map}}
+  {{/ if}}
 </template>
 
 <template name="reset">
@@ -315,6 +316,9 @@ Template.main.helpers({
   },
   lineVisible(){
     return Session.get('sale');
+  },
+  map(){
+    return ()=>qConnect('sale', 'line', (v)=>{ return {_id: v._id} })
   }
 });
 
@@ -329,8 +333,6 @@ const lineSave = (doc, input) => {
 }
 
 qForm(Template.line, {schema: lineSchema, callback: lineSave});
-// this updates session line each time session sale changes
-qConnect('sale', 'line', (v)=>{ return {_id: v._id} });
 
 Template.lines.events({
   'click .remove'(evt, tmpl){
