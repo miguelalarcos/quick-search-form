@@ -289,7 +289,9 @@ const saveCallback = (doc, input, dirty) => {
       console.log(err);
     }
     else{
-      
+      if(_id){
+        Session.set(input, {_id});
+      }
     }
   });
 }
