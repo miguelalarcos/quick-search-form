@@ -98,7 +98,7 @@ export const qConnect = (input, output, t) => {
     }
 }
 
-export const qList = (template, {name, schema, collection}) => {
+export const qList = (template, {name, schema, collection, callback}) => {
   template.onCreated(function(){
     let self = this;
     self.autorun(function(){
@@ -123,6 +123,9 @@ export const qList = (template, {name, schema, collection}) => {
     'click .edit'(evt, tmpl){
       const doc = this;
       Session.set(tmpl.data.output, doc);
+      if(callback){
+          callback(doc);
+      }
     }
   });  
 }
