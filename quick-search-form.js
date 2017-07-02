@@ -103,6 +103,7 @@ export const qList = (template, {name, schema, collection}) => {
     let self = this;
     self.autorun(function(){
       const query = Session.get(self.data.input) || {};
+      Session.set(self.data.output, null);
       if(isValid(query, schema)){
         self.subscribe(name, query); 
       }   
