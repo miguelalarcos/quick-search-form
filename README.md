@@ -14,15 +14,14 @@ With `qForm` you change the way of thinking about forms. Now the form is not res
 
 For example, one of the things you can do with this package is to create a search-form, i.e., a form that produces a query Mongo-like that you can use to subscribe to some publication.
 
-Youc could have something like this: (inputs and outputs are the keys of Session vars)
+You could have something like this: (inputs and outputs are the keys of Session vars)
 
 ```html
 {{> clientsSearch output='query'}} <!-- the clientsSearch form produces
 an object like `{initDate$gte: date1, endDate$lte: date2}` and puts to Session query -->
 {{> clientsTable input='query' output='clientSelected'}} <!-- clientsTable listen to Session query and subscribe to server with that query. When you select a client in the table, it is put to Session clientSelected -->
 {{> clientForm input='clientSelected' output='client'}} <!-- clientForm listen to Session clientSelected and puts the doc when submitted into Session client -->
-<!-- then in js code you have an autorun on session 'client' that inserts or updates to a Mongo collection after an optional manipulation -->
-<!-- other way is to use the callback function explained later-->
+<!-- then a callback will manipulate the output -->
 ```
 
 I call this "component pipeline". See the last example of this document to have an idea on how it works.
@@ -132,9 +131,13 @@ And this is how to wrap the form:
 ```javascript
 import { qForm, integer, float, date, qBase } from 'meteor/miguelalarcos:quick-search-form';
 
-const callback = (JSONDoc) => {someCollection.insert(JSONDoc);}
+const callback = (doc, input, dirty, done) => {
+    Meteor.call('saveData', dirty, (err, _id)=> {
+        done(); // this is to prevent the double click double call to method
+    })
+}
 
-qForm(Template.my_search, {schema, integer, callback});
+qForm(Template.my_form, {schema, integer, callback});
 ```
 
 *integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (this package provides you with *integer*, *float* and *date*):
@@ -150,7 +153,7 @@ template.onRendered(function(){
     if(integer) integer(this.$('.integer'));
     ...
 ```
- I recommend to install `eternicode:bootstrap-datepicker` and `bigdsk:inputmask`.
+I recommend to install `eternicode:bootstrap-datepicker` and `bigdsk:inputmask`.
 
 If you want to create a custom template for a type (see *tags* below) you will have to use the helper *setattr*.
 
@@ -177,8 +180,9 @@ In the next example you can see a form to push and remove to an array of an obje
 
 <template name="main">
   {{> search initial=initial output='querySearch'}}
+  {{> sort output='sort' initial=sortInitial}}
   {{> reset output='sale'}}
-  {{> sales input="querySearch" output="sale"}}
+  {{> sales queryInput="querySearch" sortInput='sort' output="sale"}}
   {{> sale input="sale" initial=saleInitial}}
   {{# if lineVisible}}
     <div>Lines and create line:</div>
@@ -189,6 +193,12 @@ In the next example you can see a form to push and remove to an array of an obje
 
 <template name="reset">
     <a href="#" class="reset">reset</a>
+</template>
+
+<template name="sort">
+    <div>
+        <a href="#" class="sort" name="amount">amount {{doc 'amount'}}</a>
+    </div>
 </template>
 
 <template name="search">
@@ -246,7 +256,6 @@ In the next example you can see a form to push and remove to an array of an obje
         {{# if isValid}}
           <a href="#" class="submit">Save</a>
         {{/ if}}
-        <a href="#" class="reset">Reset</a>
         </table>
     </form>
   </div>
@@ -284,7 +293,7 @@ import './main.html';
 
 setDateFormat('DD/MM/YYYY');
 
-const saveCallback = (doc, input, dirty) => {
+const saveCallback = (doc, input, dirty, done) => {
   Meteor.call('saveSale', dirty, (err, result)=>{
     if(err){
       console.log(err);
@@ -294,6 +303,7 @@ const saveCallback = (doc, input, dirty) => {
         Session.set(input, {_id});
       }
     }
+    done();
   });
 }
 
@@ -319,6 +329,9 @@ Template.main.helpers({
   },
   map(){
     return ()=>qConnect('sale', 'line', (v)=>{ return {_id: v._id} })
+  },
+  sortInitial(){
+    return {amount: -1};
   }
 });
 
@@ -328,11 +341,12 @@ Template.reset.events({
     }
 });
 
-const lineSave = (doc, input) => {
-  Meteor.call('lineSave', doc);
+const lineSave = (doc, input, dirty, done) => {
+  Meteor.call('lineSave', doc, (err, ret)=>{done()})
 }
 
 qForm(Template.line, {schema: lineSchema, callback: lineSave});
+qSort(Template.sort, ['amount']);
 
 Template.lines.events({
   'click .remove'(evt, tmpl){
@@ -533,6 +547,10 @@ Enhances *template*. Take a look at `<template name="sales">`.
 When Session *input* changes, Session *output* is updated with the value returned by *t*. The argument passed to *t* is Session.get(input).
 * qBase
 You inherit from this base class if you have plans of heavy manipulate the doc.
+* qSort
+```javascript
+(template, fields) => {...}
+```
 
 # helpers
 

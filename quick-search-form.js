@@ -143,6 +143,7 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
   template.onCreated(function(){
     schema = schema || this.data.schema;
     let self = this;
+    self.submit = false;
 
     if(self.data.map){
       this.autorun(()=>self.data.map());
@@ -163,7 +164,6 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
           }
           self.dirty = new Set(Object.keys(doc));
         }
-        //self.dirty = new Set(['_id']);
       }else if(self.data.initial){
         doc = self.data.initial;
         self.dirty = new Set(Object.keys(doc));
@@ -174,8 +174,7 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
       validateWithErrors(doc, schema, self.errors);
       doc = clone(doc, false);
       doc = JSON2form(doc, schema);
-      setDoc(self.doc, doc, schema); 
-      //self.dirty = new Set(['_id']);
+      setDoc(self.doc, doc, schema);
     });
   });
 
@@ -187,11 +186,6 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
     }
     if(date) date(this.$('.date'));
     if(autocomplete) autocomplete(this.$('.autocomplete'));
-    //const doc = getDoc(this.doc, schema);
-    
-    //for(let att of Object.keys(doc)){
-    //  this.$("input[name='" + att + "']").val(doc[att]);
-    //}    
   });
 
   template.events({
@@ -221,11 +215,10 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
         validateWithErrors(obj, schema, tmpl.errors, name);
       }
     },
-    //'click .reset'(evt, tmpl){
-    //  Session.set(tmpl.data.input, {});
-    //  Session.set(tmpl.data.input, null);
-    //},
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
+        if(tmpl.submit){
+            return;
+        }
         schema = schema || tmpl.data.schema;
         let doc = getDoc(tmpl.doc, schema);
         let obj = form2JSON(doc, schema);   
@@ -234,16 +227,13 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
           if(tmpl.data.output){
             Session.set(tmpl.data.output, obj);
           }
-          //if(resetAfterSubmit){
-            //Session.set(tmpl.data.input, {});
-            //Session.set(tmpl.data.input, null);
           tmpl.compute.invalidate();
-          //}
           if(callback){
+            tmpl.submit = true;
             let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
             dirty = form2JSON(dirty, schema);
             dirty = clone(dirty, false);
-            callback(obj, tmpl.data.input, dirty);
+            callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));//()=>tmpl.submit=false);
           }            
         }
       }
@@ -306,9 +296,6 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
     },
     isValid(){
       let tmpl = Template.instance();
-      //if(_.isEqual(Array.from(tmpl.dirty), ['_id'])){
-      //    return false;
-      //}
       schema = schema || tmpl.data.schema;
       const errors = Template.instance().errors;
 
@@ -317,6 +304,9 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
           return false;
         }
       }
+      //if(tmpl.dirty.size === 0 || _.isEqual(Array.from(tmpl.dirty), ['_id'])){
+      //  return false;
+      //}
       return true;
     }
   });
@@ -325,8 +315,9 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
 export const automaticHelpers = {
     qinput(){
         const schema = Template.instance().data.schema;
+        const keys = Template.instance().data.keys;
         const ret = [];
-        for (let k of Object.keys(schema)) {
+        for (let k of keys) {
             let schval = schema[k];
             schval.name = k;
             ret.push(schval);
@@ -364,10 +355,10 @@ export const automaticHelpers = {
 
 Template.qFormAutomatic.helpers(automaticHelpers);
 
-export const qSort = (template, schema) => {
+export const qSort = (template, fields) => {
     const getDoc = (rdoc) => {
         let ret = {};
-        for(let k of Object.keys(schema)){
+        for(let k of fields){
             ret[k] = rdoc.get(k);
         }
         return ret;
