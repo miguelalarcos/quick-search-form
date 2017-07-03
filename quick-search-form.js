@@ -102,7 +102,7 @@ export const qList = (template, {name, schema, collection, callback}) => {
   template.onCreated(function(){
     let self = this;
     self.autorun(function(){
-      const query = Session.get(self.data.input) || {};
+      const query = Session.get(self.data.queryInput) || {};
       Session.set(self.data.output, null);
       if(isValid(query, schema)){
         self.subscribe(name, query); 
@@ -112,9 +112,15 @@ export const qList = (template, {name, schema, collection, callback}) => {
 
   helpers = {};
   helpers[name] = function(){
-    let query = Session.get(Template.instance().data.input) || {};
+    let query = Session.get(Template.instance().data.queryInput) || {};
     query = queryJSON2Mongo(query, schema);
-    return collection.find(query);
+    let sort = Template.instance().data.sortInput;
+    sort = Session.get(sort);
+    if(sort){
+        return collection.find(query, {sort});
+    }else {
+        return collection.find(query);
+    }
   }
 
   template.helpers(helpers);
@@ -122,7 +128,9 @@ export const qList = (template, {name, schema, collection, callback}) => {
   template.events({
     'click .edit'(evt, tmpl){
       const doc = this;
-      Session.set(tmpl.data.output, doc);
+      if(tmpl.data.output) {
+          Session.set(tmpl.data.output, doc);
+      }
       if(callback){
           callback(doc);
       }
@@ -302,7 +310,7 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
       const errors = Template.instance().errors;
 
       for(let k of Object.keys(schema)){
-        if(errors.get(k) != ''){
+        if(errors.get(k) !== ''){
           return false;
         }
       }
@@ -352,3 +360,40 @@ export const automaticHelpers = {
 };
 
 Template.qFormAutomatic.helpers(automaticHelpers);
+
+export const qSort = (template, schema) => {
+    const getDoc = (rdoc) => {
+        let ret = {};
+        for(let k of Object.keys(schema)){
+            ret[k] = rdoc.get(k);
+        }
+        return ret;
+    }
+
+    template.onCreated(function(){
+        let self = this;
+        //self.doc = self.data.initial;
+        self.doc = new ReactiveDict();
+        self.doc.set(self.data.initial);
+        //for(let k of Object.keys(self.data.initial)){
+        //    self.doc.set(k, self.data.initial[k])
+        //}
+        Session.set(self.data.output, getDoc(self.doc));
+    });
+
+    template.events({
+        'click .sort'(evt, tmpl){
+            const name = evt.currentTarget.name;
+            tmpl.doc.set(name, tmpl.doc.get(name)===-1?1:-1);
+            Session.set(tmpl.data.output, getDoc(tmpl.doc));
+        }
+    });
+
+    template.helpers({
+        doc(attribute){
+            const doc = Template.instance().doc;
+            return doc.get(attribute);
+        },
+    });
+
+}
