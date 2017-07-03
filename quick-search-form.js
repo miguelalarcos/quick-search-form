@@ -306,6 +306,9 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
     },
     isValid(){
       let tmpl = Template.instance();
+      //if(_.isEqual(Array.from(tmpl.dirty), ['_id'])){
+      //    return false;
+      //}
       schema = schema || tmpl.data.schema;
       const errors = Template.instance().errors;
 

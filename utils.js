@@ -27,8 +27,10 @@ export const save = (doc, collection, schema) => {
             throw new Meteor.Error("saveError", 'subdoc is not valid.');
         }
         doc = flatten(doc, schema);
-        delete doc._id;        
-        collection.update(_id, {$set: doc});
+        delete doc._id;
+        if(!_.isEmpty(doc)) {
+            collection.update(_id, {$set: doc});
+        }
     }
     //return collection.findOne(_id);
     //return _id;
