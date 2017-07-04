@@ -228,12 +228,13 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
             Session.set(tmpl.data.output, obj);
           }
           tmpl.compute.invalidate();
-          if(callback){
+
+          if(callback && tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
             tmpl.submit = true;
             let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
             dirty = form2JSON(dirty, schema);
             dirty = clone(dirty, false);
-            callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));//()=>tmpl.submit=false);
+            callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));
           }            
         }
       }
@@ -246,7 +247,6 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
       return ()=>(value)=>{
         const doc = tmpl.doc;
         tmpl.dirty.add(name);
-        //console.log('(3)', name);
         setDocAttrJSON(doc, name, value, schema);
       }
     },
@@ -257,7 +257,6 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
         const doc = tmpl.doc;
         for(let k of Object.keys(subdoc)){
           tmpl.dirty.add(path+'.'+k);
-          //console.log('(4)', path+'.'+k);
           setDocAttrJSON(doc, path+'.'+k, subdoc[k], schema);
         }
       }
@@ -304,9 +303,6 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
           return false;
         }
       }
-      //if(tmpl.dirty.size === 0 || _.isEqual(Array.from(tmpl.dirty), ['_id'])){
-      //  return false;
-      //}
       return true;
     }
   });
@@ -366,12 +362,8 @@ export const qSort = (template, fields) => {
 
     template.onCreated(function(){
         let self = this;
-        //self.doc = self.data.initial;
         self.doc = new ReactiveDict();
         self.doc.set(self.data.initial);
-        //for(let k of Object.keys(self.data.initial)){
-        //    self.doc.set(k, self.data.initial[k])
-        //}
         Session.set(self.data.output, getDoc(self.doc));
     });
 
