@@ -140,6 +140,31 @@ export const qList = (template, {name, schema, collection, callback}) => {
 
 export const qForm = (template, {collection, schema, integer, float, date, autocomplete, callback}) => {
 
+  const submit = (tmpl) => {
+      if(tmpl.submit){
+          return;
+      }
+      schema = schema || tmpl.data.schema;
+      let doc = getDoc(tmpl.doc, schema);
+      let obj = form2JSON(doc, schema);
+      //if(validateWithErrors(obj, schema, tmpl.errors)){
+      if(_.every(_.values(validate(obj, schema)))){
+          obj = clone(obj, false);
+          if(tmpl.data.output){
+              Session.set(tmpl.data.output, obj);
+          }
+          tmpl.compute.invalidate();
+
+          if(callback && tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
+              tmpl.submit = true;
+              let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
+              dirty = form2JSON(dirty, schema);
+              dirty = clone(dirty, false);
+              callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));
+          }
+      }
+  }
+
   template.onCreated(function(){
     schema = schema || this.data.schema;
     let self = this;
@@ -189,12 +214,16 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
   });
 
   template.events({
+    'keyup .enter-submit'(evt, tmpl){
+        if(evt.keyCode === 13){
+            submit(tmpl);
+        }
+    },
     'keyup input, keyup textarea'(evt, tmpl){
       schema = schema || tmpl.data.schema;
       const name = evt.currentTarget.name;
       tmpl.dirty.add(name);
-      //console.log('(1)', name);
-      //const value = $(evt.currentTarget).val();
+
       const value = evt.currentTarget.value;
       tmpl.doc.set(name, value);
       let doc = getDoc(tmpl.doc, schema);
@@ -206,9 +235,8 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
       const name = evt.currentTarget.name;
       const value = evt.currentTarget.type === "checkbox" ? evt.currentTarget.checked : evt.currentTarget.value;
       const oldValue = tmpl.doc.get(name);
-      if(value != oldValue){
+      if(value !== oldValue){
         tmpl.dirty.add(name);
-        //console.log('(2)', name);
         tmpl.doc.set(name, value);
         let doc = getDoc(tmpl.doc, schema);
         let obj = form2JSON(doc, schema);         
@@ -216,27 +244,7 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
       }
     },
     'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
-        if(tmpl.submit){
-            return;
-        }
-        schema = schema || tmpl.data.schema;
-        let doc = getDoc(tmpl.doc, schema);
-        let obj = form2JSON(doc, schema);   
-        if(validateWithErrors(obj, schema, tmpl.errors)){
-          obj = clone(obj, false);
-          if(tmpl.data.output){
-            Session.set(tmpl.data.output, obj);
-          }
-          tmpl.compute.invalidate();
-
-          if(callback && tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
-            tmpl.submit = true;
-            let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
-            dirty = form2JSON(dirty, schema);
-            dirty = clone(dirty, false);
-            callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));
-          }            
-        }
+        submit(tmpl);
       }
   });  
 

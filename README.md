@@ -244,7 +244,7 @@ In the next example you can see a form to push and remove to an array of an obje
         </tr>
         <tr>
             <td><span>Amount: </span></td>
-            <td><input type="text" name="amount" class="decimal" value={{doc 'amount'}}></td>
+            <td><input type="text" name="amount" class="enter-submit decimal" value={{doc 'amount'}}></td>
         </tr>
         <tr>
           <td><div class="error">{{errorMessage 'amount'}}</div></td>
