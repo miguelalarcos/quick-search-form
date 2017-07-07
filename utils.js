@@ -188,17 +188,19 @@ export const validate = (doc, schema, atts=null) => {
         if(_.isArray(objf[k])){
           t1 = 'array';
         }
-        
+        if(_.isUndefined(objf[k]) || _.isNull(objf[k])){
+          t1 = 'null';
+        }
         let t2 = schema[k].type;
         if(t2 === 'integer' || t2 === 'float' || t2 === 'decimal'){
             t2 = 'number';
         }
-        if(t1 !== 'undefined' && t1 !== t2){
+        if(t1 !== 'null' && t1 !== t2){
             ret[k] = false;
             continue;
         }
 
-        if (schema[k].required && (objf[k] === undefined || objf[k] === '')) {
+        if (schema[k].required && (objf[k] === undefined || objf[k] === null || objf[k] === '')) {
             ret[k] = false;
             continue;
         }
@@ -262,7 +264,7 @@ export const form2JSON = (raw, schema) => {
       case 'float':
       case 'decimal':
         if(raw[k] == '' || _.isNaN(+raw[k])){
-          ret[k] = undefined;
+          ret[k] = null;
         }else{
           ret[k] = +raw[k];
         }
@@ -275,7 +277,7 @@ export const form2JSON = (raw, schema) => {
       case 'date':
         const m = moment(raw[k], dateFormat);
         if(!m.isValid()){
-            ret[k] = undefined;
+            ret[k] = null;
         }else{
             ret[k] = m.toDate();
         }

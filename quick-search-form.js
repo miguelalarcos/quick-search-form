@@ -64,7 +64,7 @@ const getDocDirty = (rd, dirty) => {
 
 const setDoc = (rd, doc, schema) => {
   for(let k of Object.keys(schema)){
-    const v = doc[k] || undefined;
+    const v = doc[k] || null; //undefined;
     rd.set(k, v);
   }
 }
@@ -142,6 +142,7 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
 
   const submit = (tmpl) => {
       if(tmpl.submit){
+          console.log('submit');
           return;
       }
       schema = schema || tmpl.data.schema;
@@ -162,6 +163,8 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
               dirty = clone(dirty, false);
               callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));
           }
+      }else{
+          console.log('no valido', validate(obj, schema));
       }
   }
 

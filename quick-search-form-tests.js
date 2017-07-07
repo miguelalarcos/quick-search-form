@@ -1,3 +1,4 @@
+// LC_ALL=es_ES.UTF-8 meteor test-packages miguelalarcos:quick-search-form
 import { Tinytest } from "meteor/tinytest";
 import { filter, validate, queryJSON2Mongo, form2JSON, JSON2form, JSON2Object, object2JSON } from './utils.js';
 import Decimal from 'decimal.js';
