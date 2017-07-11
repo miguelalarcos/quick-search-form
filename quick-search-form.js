@@ -98,20 +98,20 @@ export const qConnect = (input, output, t) => {
     }
 }
 
-export const qList = (template, {name, schema, collection, callback}) => {
+export const qList = (template, {subs, schema, collection, callback}) => {
   template.onCreated(function(){
     let self = this;
     self.autorun(function(){
       const query = Session.get(self.data.queryInput) || {};
       Session.set(self.data.output, null);
       if(isValid(query, schema)){
-        self.subscribe(name, query); 
+        self.subscribe(subs, query);
       }   
     });
   });
 
   helpers = {};
-  helpers[name] = function(){
+  helpers[subs] = function(){
     let query = Session.get(Template.instance().data.queryInput) || {};
     query = queryJSON2Mongo(query, schema);
     let sort = Template.instance().data.sortInput;
@@ -131,6 +131,7 @@ export const qList = (template, {name, schema, collection, callback}) => {
       if(tmpl.data.output) {
           Session.set(tmpl.data.output, doc);
       }
+      callback = callback || tmpl.data.callback;
       if(callback){
           callback(doc);
       }
@@ -138,7 +139,7 @@ export const qList = (template, {name, schema, collection, callback}) => {
   });  
 }
 
-export const qForm = (template, {collection, schema, integer, float, date, autocomplete, callback}) => {
+export const qForm = (template, {subs, collection, schema, integer, float, date, autocomplete, callback}) => {
 
   const submit = (tmpl) => {
       if(tmpl.submit){
@@ -146,6 +147,8 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
           return;
       }
       schema = schema || tmpl.data.schema;
+      callback = callback || tmpl.data.callback;
+
       let doc = getDoc(tmpl.doc, schema);
       let obj = form2JSON(doc, schema);
       //if(validateWithErrors(obj, schema, tmpl.errors)){
@@ -156,7 +159,7 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
           }
           tmpl.compute.invalidate();
 
-          if(callback && tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
+          if(callback){ //&& tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
               tmpl.submit = true;
               let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
               dirty = form2JSON(dirty, schema);
@@ -180,11 +183,24 @@ export const qForm = (template, {collection, schema, integer, float, date, autoc
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
 
+    if(subs) {
+        this.autorun(function () {
+            let doc = Session.get(self.data.input);
+            if (doc && doc._id) {
+                self.subscribe(subs, doc._id);
+            }
+        });
+    }
+
     this.compute = this.autorun(function(){
       let doc = Session.get(self.data.input);
       if(doc){
         if(doc._id && collection) {
             doc = collection.findOne(doc._id) || {};
+            //if(!_.isEmpty(doc) && self.data.output){
+            //    doc = clone(doc, false);
+            //    Session.set(self.data.output, doc);
+            //}
             self.dirty = new Set(['_id']);
         }else{
           if(self.data.initial){
