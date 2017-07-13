@@ -141,11 +141,10 @@ export const qList = (template, {subs, schema, collection, callback}) => {
 
 export const qForm = (template, {subs, collection, schema, integer, float, date, autocomplete, callback}) => {
 
-  const submit = (tmpl) => {
-      if(tmpl.submit){
-          console.log('submit');
-          return;
-      }
+  let submit = (tmpl) => {
+      //if(tmpl.submit){
+      //    return;
+      //}
       schema = schema || tmpl.data.schema;
       callback = callback || tmpl.data.callback;
 
@@ -160,25 +159,27 @@ export const qForm = (template, {subs, collection, schema, integer, float, date,
           tmpl.compute.invalidate();
 
           if(callback){ //&& tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
-              tmpl.submit = true;
+              //tmpl.submit = true;
               let dirty = getDocDirty(tmpl.doc, tmpl.dirty);
               dirty = form2JSON(dirty, schema);
               dirty = clone(dirty, false);
-              callback(obj, tmpl.data.input, dirty, ()=>Tracker.afterFlush(()=>tmpl.submit=false));
+              callback(obj, tmpl.data.input, dirty); //, ()=>Tracker.afterFlush(()=>tmpl.submit=false));
           }
       }else{
-          console.log('no valido', validate(obj, schema));
+          console.log('not valid', validate(obj, schema));
       }
   }
+
+  submit = _.debounce(submit, 500, true);
 
   template.onCreated(function(){
     schema = schema || this.data.schema;
     let self = this;
-    self.submit = false;
+    //self.submit = false;
 
-    if(self.data.map){
-      this.autorun(()=>self.data.map());
-    }
+    //if(self.data.map){
+    //  this.autorun(()=>self.data.map());
+    //}
 
     self.doc = new ReactiveDict();
     self.errors = new ReactiveDict();
@@ -262,7 +263,7 @@ export const qForm = (template, {subs, collection, schema, integer, float, date,
         validateWithErrors(obj, schema, tmpl.errors, name);
       }
     },
-    'click .submit': function (e, tmpl) {//TODO: don't use name obj, use name doc
+    'click .submit': function (e, tmpl) {
         submit(tmpl);
       }
   });  

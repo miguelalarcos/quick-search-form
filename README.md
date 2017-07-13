@@ -140,6 +140,10 @@ const callback = (doc, input, dirty, done) => {
 qForm(Template.my_form, {schema, integer, callback});
 ```
 
+You can pass the callback in the template helpers instead per Template:
+
+`{{> sale input="sale" initial=saleInitial callback=callback}}`
+
 *integer* is how to render the inputs of type *integer*. This is how it works, so you can provide your own render (this package provides you with *integer*, *float* and *date*):
 
 ```javascript
@@ -187,7 +191,7 @@ In the next example you can see a form to push and remove to an array of an obje
   {{# if lineVisible}}
     <div>Lines and create line:</div>
     {{> lines input="sale"}}
-    {{> line input="line" map=map}}
+    {{> line input="line"}}
   {{/ if}}
 </template>
 
@@ -313,8 +317,14 @@ const dateOptions = {
 };
 
 qForm(Template.search, {schema: searchSchema, date: date(dateOptions), resetAfterSubmit: false});
-qList(Template.sales, {name: 'sales', schema: searchSchema, collection: Sale});
+qList(Template.sales, {subs: 'sales', schema: searchSchema, collection: Sale});
 qForm(Template.sale, {collection: Sale, schema: saleSchema, date: date(dateOptions), float, callback: saveCallback});
+
+Template.main.onCreated(function(){
+    this.autorun(function(){
+        qConnect('sale', 'line', (v)=>{ return {_id: v._id} }) 
+    });
+});
 
 Template.main.helpers({
   initial() {
@@ -326,9 +336,6 @@ Template.main.helpers({
   },
   lineVisible(){
     return Session.get('sale');
-  },
-  map(){
-    return ()=>qConnect('sale', 'line', (v)=>{ return {_id: v._id} })
   },
   sortInitial(){
     return {amount: -1};
@@ -536,10 +543,10 @@ You can import `automaticHelpers` so you can build your own automatic form.
 Enhances *template*. Take a look at `<template name="sale">` for example.
 * qList
 ```javascript
-(template, {name, schema, collection}) => {...}
+(template, {subs, schema, collection}) => {...}
 ```
 Enhances *template*. Take a look at `<template name="sales">`.
-*name* is the name of the publication source and the name of the helpers that gives the data to the template.
+*subs* is the name of the publication source and the name of the helpers that gives the data to the template.
 * qConnect
 ```javascript
 (input, output, t) => {...}
