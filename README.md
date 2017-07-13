@@ -131,9 +131,8 @@ And this is how to wrap the form:
 ```javascript
 import { qForm, integer, float, date, qBase } from 'meteor/miguelalarcos:quick-search-form';
 
-const callback = (doc, input, dirty, done) => {
+const callback = (doc, input, dirty) => {
     Meteor.call('saveData', dirty, (err, _id)=> {
-        done(); // this is to prevent the double click double call to method
     })
 }
 
