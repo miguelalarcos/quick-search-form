@@ -133,7 +133,7 @@ export const qList = (template, {subs, schema, collection, callback}) => {
       }
       callback = callback || tmpl.data.callback;
       if(callback){
-          callback(doc);
+          callback({action: 'edit', doc});
       }
     }
   });  

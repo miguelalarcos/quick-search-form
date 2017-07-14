@@ -139,7 +139,7 @@ const callback = (doc, input, dirty) => {
 qForm(Template.my_form, {schema, integer, callback});
 ```
 
-You can pass the callback in the template helpers instead per Template:
+You can pass the callback in the template helpers instead than per Template:
 
 `{{> sale input="sale" initial=saleInitial callback=callback}}`
 
@@ -185,7 +185,7 @@ In the next example you can see a form to push and remove to an array of an obje
   {{> search initial=initial output='querySearch'}}
   {{> sort output='sort' initial=sortInitial}}
   {{> reset output='sale'}}
-  {{> sales queryInput="querySearch" sortInput='sort' output="sale"}}
+  {{> sales queryInput="querySearch" sortInput='sort' output="sale" callback=myCallback}}
   {{> sale input="sale" initial=saleInitial}}
   {{# if lineVisible}}
     <div>Lines and create line:</div>
@@ -338,6 +338,10 @@ Template.main.helpers({
   },
   sortInitial(){
     return {amount: -1};
+  },
+  myCallback({action, doc}){
+      // action can be for example 'edit', but also other keyword if you extends events on template sales
+      // for example: 'remove'
   }
 });
 
@@ -537,12 +541,12 @@ You can import `automaticHelpers` so you can build your own automatic form.
 
 * qForm
 ```javascript
-(template, {schema, integer, float, date, autocomplete, callback, resetAfterSubmit}) => {...}
+(template, {subs, collection, schema, integer, float, date, autocomplete, callback}) => {...}
 ```
 Enhances *template*. Take a look at `<template name="sale">` for example.
 * qList
 ```javascript
-(template, {subs, schema, collection}) => {...}
+(template, {subs, schema, collection, callback}) => {...}
 ```
 Enhances *template*. Take a look at `<template name="sales">`.
 *subs* is the name of the publication source and the name of the helpers that gives the data to the template.
