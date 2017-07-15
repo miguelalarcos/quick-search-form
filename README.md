@@ -561,6 +561,11 @@ You inherit from this base class if you have plans of heavy manipulate the doc.
 ```javascript
 (template, fields) => {...}
 ```
+* qDoc
+```javascript
+(template, subs, collection) => {
+```
+You are subscribed to a doc. It provides the helper `doc`;
 
 # helpers
 

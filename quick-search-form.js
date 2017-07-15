@@ -139,6 +139,26 @@ export const qList = (template, {subs, schema, collection, callback}) => {
   });  
 }
 
+export const qDoc = (template, subs, collection) => {
+    template.onCreated(function(){
+       let self = this;
+       self.autorun(function(){
+           let doc = Session.get(self.data.input);
+           if(doc && doc._id) {
+               self.subscribe(subs, doc._id);
+           }
+       })
+    });
+    template.helpers({
+        doc(){
+            let doc = Session.get(Template.instance().data.input);
+            if(doc && doc._id) {
+                return collection.findOne(doc._id);
+            }
+        }
+    });
+};
+
 export const qForm = (template, {subs, collection, schema, integer, float, date, autocomplete, callback}) => {
 
   let submit = (tmpl) => {
