@@ -55,7 +55,7 @@ const rflatten = (doc, schema, path, sep) => {
     return {path, doc};
   }
   const t = typeof doc;
-  if(t !== 'object' || _.isDate(doc) || _.isArray(doc) || moment.isMoment(doc) || doc.abs){
+  if(t !== 'object' || _.isDate(doc) || _.isArray(doc) || moment.isMoment(doc) || (doc && doc.abs) || _.isNull(doc)){
     return null;
   }
 
@@ -160,7 +160,7 @@ export const queryJSON2Mongo = (query, schema) => {
         let seg = key.split('$');
         let k = seg[0];
         let mod = seg[1];
-        if(k && query[key] !== null && _.include(['eq', 'lt', 'lte', 'gt', 'gte', 'regex', 'in'], mod)){
+        if(k && query[key] !== null && query[key] !== '' && _.include(['eq', 'lt', 'lte', 'gt', 'gte', 'regex', 'in'], mod)){
             ret[k] = ret[k] || {};
             ret[k]['$'+mod] = query[key];
         }
@@ -263,7 +263,7 @@ export const form2JSON = (raw, schema) => {
       case 'integer':
       case 'float':
       case 'decimal':
-        if(raw[k] == '' || _.isNaN(+raw[k])){
+        if(raw[k] == '' || _.isUndefined(raw[k]) || _.isNull(raw[k]) || _.isNaN(+raw[k])){
           ret[k] = null;
         }else{
           ret[k] = +raw[k];
