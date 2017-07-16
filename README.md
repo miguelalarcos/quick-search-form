@@ -13,6 +13,7 @@ Create form-objects that you can manipulate.
 Read latest docs on [github](https://github.com/miguelalarcos/quick-search-form).
 
 With `qForm` you change the way of thinking about forms. Now the form is not responsible of sending the data to the server. Now it just produce an object that you can manipulate and decide if to send to the server or whatever.
+You have to think that there are components with inputs and outputs.
 
 For example, one of the things you can do with this package is to create a search-form, i.e., a form that produces a query Mongo-like that you can use to subscribe to some publication.
 
@@ -21,12 +22,12 @@ You could have something like this: (inputs and outputs are the keys of Session 
 ```html
 {{> clientsSearch output='query'}} <!-- the clientsSearch form produces
 an object like `{initDate$gte: date1, endDate$lte: date2}` and puts to Session query -->
-{{> clientsTable input='query' output='clientSelected'}} <!-- clientsTable listen to Session query and subscribe to server with that query. When you select a client in the table, it is put to Session clientSelected -->
+{{> clientsTable inputQuery='query' output='clientSelected'}} <!-- clientsTable listen to Session query and subscribe to server with that query. When you select a client in the table, it is put to Session clientSelected -->
 {{> clientForm input='clientSelected' output='client'}} <!-- clientForm listen to Session clientSelected and puts the doc when submitted into Session client -->
 <!-- then a callback will manipulate the output -->
 ```
 
-I call this "component pipeline". See the last example of this document to have an idea on how it works.
+I call this "component pipeline".
 
 Let's see an input example:
 
@@ -44,7 +45,7 @@ These are other inputs:
 <input type="checkbox" name="done" class="boolean" checked={{doc 'done'}}>
 ```
 
-The possible types are: string, boolean, integer, float, decimal, date and array (of strings). Decimal types are instances of Decimal of decimal.js, and dates are instances of moment.
+The possible types are: string, boolean, integer, float, decimal, date and array (of strings).
 
 A doc can be in three different states: raw, JSON and object. The package provides functions to pass from JSON to object and the reverse: `JSON2Object`, `object2JSON`. A form will output in JSON. To help the things, you can do the next:
 
@@ -60,22 +61,15 @@ class AB extends qBase{
     super(doc, AB.schema);
   }
   upper(){
-    if(this.b)
-      this.b = this.b.toUpperCase();
+    this.b = this.b.toUpperCase();
   }
 }
 
 AB.schema = schema_form;
 
-Template.hello.helpers({
-  repr3(){
-    let doc = Session.get('output3') || {};
-    let ab = new AB(doc);
-    ab.upper();
-    doc = ab.toJSON();
-    return JSON.stringify(doc);
-  }
-});
+let ab = new AB(doc);
+ab.upper();
+doc = ab.toJSON();
 ```
 
 An interesting thing of this package is to construct Mongo-like queries:
@@ -113,7 +107,7 @@ Template.hello.helpers({
 And the call to the template is:
 
 ```html
-{{> my_search initial=initial output='output2'}}
+{{> my_search initial=initial output='search'}}
 ```
 
 This is another example of schema, with validation:
@@ -141,7 +135,7 @@ const callback = (doc, input, dirty) => {
 qForm(Template.my_form, {schema, integer, callback});
 ```
 
-You can pass the callback in the template helpers instead than per Template:
+You can pass the callback in the template instance (by a helper) instead than per Template:
 
 `{{> sale input="sale" initial=saleInitial callback=callback}}`
 
@@ -169,8 +163,6 @@ If you want to create a custom template for a type (see *tags* below) you will h
 When your template wants to change the value of the *attr*, it has to call `set(value)`.
 
 The *validate* function takes a JSON and a schema, and returns a dictionary where keys are the fields of the schema and values are true or false indicating if it's valid or not. The *validate* function call each validate function with two arguments, the value of the attribute and the full doc. There's an `isValid` function that return *true* or *false*.
-
-But it's easiest to build like `let ab = new AB(docJSON);` and then call `let isValid = ab.isValid()`.
 
 In the next example you can see a form to push and remove to an array of an object.
 
@@ -298,7 +290,7 @@ import './main.html';
 
 setDateFormat('DD/MM/YYYY');
 
-const saveCallback = (doc, input, dirty, done) => {
+const saveCallback = (doc, input, dirty) => {
   Meteor.call('saveSale', dirty, (err, result)=>{
     if(err){
       console.log(err);
@@ -308,7 +300,6 @@ const saveCallback = (doc, input, dirty, done) => {
         Session.set(input, {_id});
       }
     }
-    done();
   });
 }
 
@@ -353,8 +344,8 @@ Template.reset.events({
     }
 });
 
-const lineSave = (doc, input, dirty, done) => {
-  Meteor.call('lineSave', doc, (err, ret)=>{done()})
+const lineSave = (doc, input, dirty) => {
+  Meteor.call('lineSave', doc);
 }
 
 qForm(Template.line, {schema: lineSchema, callback: lineSave});
@@ -558,14 +549,14 @@ Enhances *template*. Take a look at `<template name="sales">`.
 ```
 When Session *input* changes, Session *output* is updated with the value returned by *t*. The argument passed to *t* is Session.get(input).
 * qBase
-You inherit from this base class if you have plans of heavy manipulate the doc.
+You inherit from this base class if you have plans of heavy manipulation of the doc.
 * qSort
 ```javascript
 (template, fields) => {...}
 ```
 * qDoc
 ```javascript
-(template, subs, collection) => {
+(template, subs, collection) => {...}
 ```
 You are subscribed to a doc. It provides the helper `doc`;
 
