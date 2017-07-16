@@ -534,7 +534,7 @@ You can import `automaticHelpers` so you can build your own automatic form.
 
 * qForm
 ```javascript
-(template, {subs, collection, schema, integer, float, date, autocomplete, callback}) => {...}
+(template, {subs, collection, schema, integer, float, date, autocomplete, callback, reset}) => {...}
 ```
 Enhances *template*. Take a look at `<template name="sale">` for example.
 * qList

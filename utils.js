@@ -263,7 +263,7 @@ export const form2JSON = (raw, schema) => {
       case 'integer':
       case 'float':
       case 'decimal':
-        if(raw[k] == '' || _.isUndefined(raw[k]) || _.isNull(raw[k]) || _.isNaN(+raw[k])){
+        if(raw[k] === '' || _.isUndefined(raw[k]) || _.isNull(raw[k]) || _.isNaN(+raw[k])){
           ret[k] = null;
         }else{
           ret[k] = +raw[k];

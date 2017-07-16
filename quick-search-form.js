@@ -159,7 +159,11 @@ export const qDoc = (template, subs, collection) => {
     });
 };
 
-export const qForm = (template, {subs, collection, schema, integer, float, date, autocomplete, callback}) => {
+export const qForm = (template, {subs, collection, schema, integer, float, date, autocomplete, callback, reset}) => {
+
+  if(reset === undefined){
+      reset = false;
+  }
 
   let submit = (tmpl) => {
       //if(tmpl.submit){
@@ -176,7 +180,9 @@ export const qForm = (template, {subs, collection, schema, integer, float, date,
           if(tmpl.data.output){
               Session.set(tmpl.data.output, obj);
           }
-          tmpl.compute.invalidate();
+          if(reset) {
+              tmpl.compute.invalidate();
+          }
 
           if(callback){ //&& tmpl.dirty.size !== 0 && !_.isEqual(Array.from(tmpl.dirty), ['_id'])){
               //tmpl.submit = true;
