@@ -10,7 +10,7 @@ Create form-objects that you can manipulate.
 
 `meteor add miguelalarcos:quick-search-form`
 
-Read last docs on [github](https://github.com/miguelalarcos/quick-search-form).
+Read latest docs on [github](https://github.com/miguelalarcos/quick-search-form).
 
 With `qForm` you change the way of thinking about forms. Now the form is not responsible of sending the data to the server. Now it just produce an object that you can manipulate and decide if to send to the server or whatever.
 
@@ -608,3 +608,27 @@ You are subscribed to a doc. It provides the helper `doc`;
 * `filter(doc, schema)`
   eliminates all the keys of doc that don't exist in schema.
 
+# Patterns
+TODO
+* A form for update a doc
+
+it's input must be that doc.
+
+* A form for insert a doc
+
+it's input must be null.
+
+* A form for insert and then update a doc
+
+it's input must be null.
+In the template callback, then in the callback of the Meteor.call, set the input with the _id result.
+
+* A form that must have an id that references a doc of other collection
+
+In the input pass that id (for example saleId).
+
+* A form that insert a subdoc in an array of a doc
+
+In the input pass the id of the doc with some name.
+In the callback, just Meteor.call the subdoc.
+In the server method use the passed id to push the subdoc in the doc.
