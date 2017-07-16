@@ -160,7 +160,7 @@ export const queryJSON2Mongo = (query, schema) => {
         let seg = key.split('$');
         let k = seg[0];
         let mod = seg[1];
-        if(k && _.include(['eq', 'lt', 'lte', 'gt', 'gte', 'regex', 'in'], mod)){
+        if(k && query[key] !== null && _.include(['eq', 'lt', 'lte', 'gt', 'gte', 'regex', 'in'], mod)){
             ret[k] = ret[k] || {};
             ret[k]['$'+mod] = query[key];
         }

@@ -27,6 +27,13 @@ Tinytest.add('queryJSON2Mongo - query two parameters one field', function (test)
   test.equal(mongoQ, expected);
 });
 
+Tinytest.add('queryJSON2Mongo - query two parameters one null', function (test) {
+    const queryJSON = {"a$gt": 5, "b$eq": null};
+    const expected = {a: {$gt: 5}};
+    const mongoQ = queryJSON2Mongo(queryJSON, mongoSchema);
+    test.equal(mongoQ, expected);
+});
+
 const schema = {x: {type: 'integer'}, d: {type: 'decimal'}}
 
 Tinytest.add('form2JSON JSON2form - simple', function (test) {  
